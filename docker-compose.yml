@@ -1,0 +1,190 @@
+version: '3'
+
+services:
+  nginx:
+    image: nginx:1.17
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - nginx_www:/var/www
+      - ./jbrowse:/var/www/jbrowse
+      - ${TOGOVAR_DOCKER_JBROWSE_DATA:-./www/jbrowse/data}:/var/www/jbrowse/data
+      - ${TOGOVAR_DOCKER_PUBLIC_DIR:-./www/public}:${TOGOVAR_PUBLIC_DIR:-/var/www/public}
+    ports:
+      - ${TOGOVAR_DOCKER_PORT:-80}:80
+    depends_on:
+      - app
+      - sparqlist
+      - virtuoso
+      - elasticsearch
+      - elasticsearch2
+      - elasticsearch3
+      - elasticsearch4
+      - elasticsearch5
+      - elasticsearch6
+
+  app:
+    build: docker/ruby
+    environment:
+      - NODE_ENV=production
+      - RAILS_ENV=production
+      - SECRET_KEY_BASE=${TOGOVAR_SECRET_KEY_BASE}
+    env_file:
+      - .env
+    volumes:
+      - ./app:/app
+      - ./stanza:/stanza
+      - nginx_www:/var/www
+      - ${TOGOVAR_DOCKER_PUBLIC_DIR:-./www/public}:${TOGOVAR_PUBLIC_DIR:-/var/www/public}
+      - app_bundle:/app/vendor/bundle
+      - app_log:/app/log
+      - app_node_modules:/app/node_modules
+      - app_tmp:/app/tmp
+
+  sparqlist:
+    image: dbcls/sparqlist
+    environment:
+      - ADMIN_PASSWORD=${TOGOVAR_SPARQLIST_ADMIN_PASSWORD:-changeme}
+    env_file:
+      - .env
+    volumes:
+      - ./sparqlist:/app/repository
+
+  virtuoso:
+    image: tenforce/virtuoso:virtuoso7.2.4
+    environment:
+      - DEFAULT_GRAPH=http://togovar.biosciencedbc.jp
+      - VIRT_Parameters_NumberOfBuffers=2720000
+      - VIRT_Parameters_MaxDirtyBuffers=2000000
+      - VIRT_Parameters_DirsAllowed=/load
+      - VIRT_SPARQL_MaxQueryCostEstimationTime=6000
+      - VIRT_SPARQL_MaxQueryExecutionTime=600
+      - VIRT_SPARQL_ResultSetMaxRows=1000000
+    volumes:
+      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/virtuoso:/data
+      - ${TOGOVAR_DOCKER_LOAD_BASE:-./load}:/load:ro
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+    environment:
+      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
+      - cluster.name=togovar-cluster
+      - node.name=togovar-node-1
+      - bootstrap.memory_lock=true
+      - xpack.monitoring.collection.enabled=true
+      - path.repo=/usr/share/elasticsearch/snapshot
+      - discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3,elasticsearch4,elasticsearch5,elasticsearch6
+      - discovery.zen.minimum_master_nodes=4
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data1:/usr/share/elasticsearch/data
+      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
+
+  elasticsearch2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+    environment:
+      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
+      - cluster.name=togovar-cluster
+      - node.name=togovar-node-2
+      - bootstrap.memory_lock=true
+      - xpack.monitoring.collection.enabled=true
+      - path.repo=/usr/share/elasticsearch/snapshot
+      - discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3,elasticsearch4,elasticsearch5,elasticsearch6
+      - discovery.zen.minimum_master_nodes=4
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data2:/usr/share/elasticsearch/data
+      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
+
+  elasticsearch3:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+    environment:
+      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
+      - cluster.name=togovar-cluster
+      - node.name=togovar-node-3
+      - bootstrap.memory_lock=true
+      - xpack.monitoring.collection.enabled=true
+      - path.repo=/usr/share/elasticsearch/snapshot
+      - discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3,elasticsearch4,elasticsearch5,elasticsearch6
+      - discovery.zen.minimum_master_nodes=4
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data3:/usr/share/elasticsearch/data
+      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
+
+  elasticsearch4:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+    environment:
+      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
+      - cluster.name=togovar-cluster
+      - node.name=togovar-node-4
+      - bootstrap.memory_lock=true
+      - xpack.monitoring.collection.enabled=true
+      - path.repo=/usr/share/elasticsearch/snapshot
+      - discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3,elasticsearch4,elasticsearch5,elasticsearch6
+      - discovery.zen.minimum_master_nodes=4
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data4:/usr/share/elasticsearch/data
+      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
+
+  elasticsearch5:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+    environment:
+      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
+      - cluster.name=togovar-cluster
+      - node.name=togovar-node-5
+      - bootstrap.memory_lock=true
+      - xpack.monitoring.collection.enabled=true
+      - path.repo=/usr/share/elasticsearch/snapshot
+      - discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3,elasticsearch4,elasticsearch5,elasticsearch6
+      - discovery.zen.minimum_master_nodes=4
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data5:/usr/share/elasticsearch/data
+      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
+
+  elasticsearch6:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+    environment:
+      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
+      - cluster.name=togovar-cluster
+      - node.name=togovar-node-6
+      - bootstrap.memory_lock=true
+      - xpack.monitoring.collection.enabled=true
+      - path.repo=/usr/share/elasticsearch/snapshot
+      - discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3,elasticsearch4,elasticsearch5,elasticsearch6
+      - discovery.zen.minimum_master_nodes=4
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data6:/usr/share/elasticsearch/data
+      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
+
+volumes:
+  nginx_www:
+    driver: local
+  app_bundle:
+    driver: local
+  app_log:
+    driver: local
+  app_node_modules:
+    driver: local
+  app_tmp:
+    driver: local
