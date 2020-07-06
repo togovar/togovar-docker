@@ -53,19 +53,20 @@ services:
     image: tenforce/virtuoso:virtuoso7.2.4
     environment:
       - DEFAULT_GRAPH=http://togovar.biosciencedbc.jp
-      - VIRT_Parameters_NumberOfBuffers=2720000
-      - VIRT_Parameters_MaxDirtyBuffers=2000000
+      - VIRT_Parameters_NumberOfBuffers=${VIRT_PARAMETERS_NUMBEROFBUFFERS:-2720000}
+      - VIRT_Parameters_MaxDirtyBuffers=${VIRT_PARAMETERS_PARAMETERS_MAXDIRTYBUFFERS:-2000000}
       - VIRT_Parameters_DirsAllowed=/load
       - VIRT_SPARQL_MaxQueryExecutionTime=600
       - VIRT_SPARQL_ResultSetMaxRows=1000000
     volumes:
       - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/virtuoso:/data
       - ${TOGOVAR_DOCKER_LOAD_BASE:-./load}:/load:ro
+      - ${TOGOVAR_DOCKER_LOAD_SCRIPT:-./docker/virtuoso}:/root
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
     environment:
-      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
+      - ${TOGOVAR_ES_JAVA_OPTS:-"ES_JAVA_OPTS=-Xms16g -Xmx16g"}
       - cluster.name=togovar-cluster
       - node.name=togovar-node-1
       - bootstrap.memory_lock=true
@@ -80,11 +81,16 @@ services:
     volumes:
       - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data1:/usr/share/elasticsearch/data
       - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10k"
+        max-file: "1" 
 
   elasticsearch2:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
     environment:
-      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
+      - ${TOGOVAR_ES_JAVA_OPTS:-"ES_JAVA_OPTS=-Xms16g -Xmx16g"}
       - cluster.name=togovar-cluster
       - node.name=togovar-node-2
       - bootstrap.memory_lock=true
@@ -99,11 +105,16 @@ services:
     volumes:
       - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data2:/usr/share/elasticsearch/data
       - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10k"
+        max-file: "1" 
 
   elasticsearch3:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
     environment:
-      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
+      - ${TOGOVAR_ES_JAVA_OPTS:-"ES_JAVA_OPTS=-Xms16g -Xmx16g"}
       - cluster.name=togovar-cluster
       - node.name=togovar-node-3
       - bootstrap.memory_lock=true
@@ -118,11 +129,16 @@ services:
     volumes:
       - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data3:/usr/share/elasticsearch/data
       - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10k"
+        max-file: "1" 
 
   elasticsearch4:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
     environment:
-      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
+      - ${TOGOVAR_ES_JAVA_OPTS:-"ES_JAVA_OPTS=-Xms16g -Xmx16g"}
       - cluster.name=togovar-cluster
       - node.name=togovar-node-4
       - bootstrap.memory_lock=true
@@ -137,11 +153,16 @@ services:
     volumes:
       - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data4:/usr/share/elasticsearch/data
       - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10k"
+        max-file: "1" 
 
   elasticsearch5:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
     environment:
-      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
+      - ${TOGOVAR_ES_JAVA_OPTS:-"ES_JAVA_OPTS=-Xms16g -Xmx16g"}
       - cluster.name=togovar-cluster
       - node.name=togovar-node-5
       - bootstrap.memory_lock=true
@@ -156,11 +177,16 @@ services:
     volumes:
       - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data5:/usr/share/elasticsearch/data
       - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10k"
+        max-file: "1" 
 
   elasticsearch6:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
     environment:
-      - "ES_JAVA_OPTS=-Xms16g -Xmx16g"
+      - ${TOGOVAR_ES_JAVA_OPTS:-"ES_JAVA_OPTS=-Xms16g -Xmx16g"}
       - cluster.name=togovar-cluster
       - node.name=togovar-node-6
       - bootstrap.memory_lock=true
@@ -175,6 +201,11 @@ services:
     volumes:
       - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data6:/usr/share/elasticsearch/data
       - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10k"
+        max-file: "1" 
 
 volumes:
   nginx_www:
