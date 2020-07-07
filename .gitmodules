@@ -7,6 +7,3 @@
 [submodule "sparqlist"]
 	path = sparqlist
 	url = https://github.com/togovar/sparqlist.git
-[submodule "jbrowse"]
-	path = jbrowse
-	url = https://github.com/togovar/jbrowse.git
