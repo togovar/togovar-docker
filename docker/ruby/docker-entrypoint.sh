@@ -4,10 +4,10 @@ if [[ $1 = "start" ]]; then
   mkdir -p /app/tmp/sockets /app/tmp/pids
   rm -f /app/tmp/sockets/* /app/tmp/pids/*
 
-  bundle install --path vendor/bundle
+  bundle install
   yarn install
 
-  bundle exec rails webpacker:compile
+  rails webpacker:compile
 
   cp -rv /app/public/* /var/www/
 
@@ -21,7 +21,7 @@ if [[ $1 = "start" ]]; then
   echo
   echo "start unicorn..."
 
-  bundle exec unicorn --env production -c config/unicorn.rb
+  unicorn --env production -c config/unicorn.rb
 else
   exec "$@"
 fi

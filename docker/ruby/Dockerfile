@@ -1,8 +1,8 @@
-FROM ruby:2.5
+FROM ruby:2.7.1-buster
 
-ARG ts=0.0.15
+ARG ts=0.0.19
 
-RUN curl -sL "https://deb.nodesource.com/setup_10.x" | bash - && \
+RUN curl -sL "https://deb.nodesource.com/setup_12.x" | bash - && \
     curl -sS "https://dl.yarnpkg.com/debian/pubkey.gpg" | apt-key add - && \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list
 
@@ -12,8 +12,6 @@ RUN apt-get update && \
 
 RUN gem install bundler
 
-RUN echo -e "---\nBUNDLE_PATH: \"vendor/bundle\"" > /usr/local/bundle/config
-
 ADD https://github.com/togostanza/ts/releases/download/v${ts}/ts_${ts}_linux_amd64.tar.gz /tmp/
 
 RUN cd tmp && \
@@ -21,7 +19,8 @@ RUN cd tmp && \
     mv ts_${ts}_linux_amd64/ts /usr/local/bin/ && \
     /usr/local/bin/ts version
 
-ADD docker-entrypoint.sh /
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN ln -s /usr/local/bin/docker-entrypoint.sh /
 
 WORKDIR app
 
