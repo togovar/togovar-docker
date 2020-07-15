@@ -1,224 +1,166 @@
-version: '3'
+version: '3.5'
 
 services:
   nginx:
     image: nginx:1.17
     volumes:
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - app_tmp:/app/tmp
       - nginx_www:/var/www
-      - ${TOGOVAR_DOCKER_PUBLIC_DIR:-./www/public}:${TOGOVAR_PUBLIC_DIR:-/var/www/public}
+      - ${PUBLIC_DIR}:/var/www/public
     ports:
-      - ${TOGOVAR_DOCKER_PORT:-80}:80
+      - ${NGINX_PORT:-80}:80
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
     depends_on:
       - app
       - sparqlist
       - virtuoso
-      - jbrowse 
-      - elasticsearch
-      - elasticsearch2
-      - elasticsearch3
-      - elasticsearch4
-      - elasticsearch5
-      - elasticsearch6
+      - jbrowse
+      - elasticsearch01
+      - elasticsearch02
+      - elasticsearch03
+      - elasticsearch04
+      - elasticsearch05
 
   app:
     build: docker/ruby
-    environment:
-      - NODE_ENV=production
-      - RAILS_ENV=production
-      - SECRET_KEY_BASE=${TOGOVAR_SECRET_KEY_BASE}
-    env_file:
-      - .env
+    image: togovar:#{VERSION}
+    env_file: togovar.env
     volumes:
       - ./app:/app
       - ./stanza:/stanza
-      - nginx_www:/var/www
-      - ${TOGOVAR_DOCKER_PUBLIC_DIR:-./www/public}:${TOGOVAR_PUBLIC_DIR:-/var/www/public}
-      - app_bundle:/app/vendor/bundle
+      - app_bundle:/usr/local/bundle
       - app_log:/app/log
       - app_node_modules:/app/node_modules
       - app_tmp:/app/tmp
+      - nginx_www:/var/www
+      - ${PUBLIC_DIR}:/var/www/public
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
 
   sparqlist:
-    image: dbcls/sparqlist
-    environment:
-      - ADMIN_PASSWORD=${TOGOVAR_SPARQLIST_ADMIN_PASSWORD:-changeme}
-    env_file:
-      - .env
+    image: dbcls/sparqlist:snapshot-1f7dbc9
+    env_file: togovar.env
     volumes:
       - ./sparqlist:/app/repository
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
 
   virtuoso:
     image: tenforce/virtuoso:virtuoso7.2.4
-    environment:
-      - DEFAULT_GRAPH=http://togovar.biosciencedbc.jp
-      - VIRT_Parameters_NumberOfBuffers=${VIRT_PARAMETERS_NUMBEROFBUFFERS:-2720000}
-      - VIRT_Parameters_MaxDirtyBuffers=${VIRT_PARAMETERS_PARAMETERS_MAXDIRTYBUFFERS:-2000000}
-      - VIRT_Parameters_DirsAllowed=/load
-      - VIRT_SPARQL_MaxQueryExecutionTime=600
-      - VIRT_SPARQL_ResultSetMaxRows=1000000
+    env_file: togovar.env
     volumes:
-      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/virtuoso:/data
-      - ${TOGOVAR_DOCKER_LOAD_BASE:-./load}:/load:ro
-      - ${TOGOVAR_DOCKER_LOAD_SCRIPT:-./docker/virtuoso}:/root
+      - ./docker/virtuoso/bin:/usr/local/bin
+      - ${VIRTUOSO_VOLUMES_LOAD}:/load:ro
+      - ${VIRTUOSO_VOLUMES_DATA}:/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
 
   jbrowse:
     build: docker/jbrowse
     volumes:
-      - ${TOGOVAR_DOCKER_JBROWSE_DATA:-./www/jbrowse/data}:/usr/share/nginx/html/jbrowse/data
+      - ${JBROWSE_VOLUMES_DATA}:/usr/share/nginx/html/jbrowse/data
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+  elasticsearch01: &elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+    env_file: togovar.env
     environment:
-      - ${TOGOVAR_ES_JAVA_OPTS:-"ES_JAVA_OPTS=-Xms16g -Xmx16g"}
-      - cluster.name=togovar-cluster
-      - node.name=togovar-node-1
-      - bootstrap.memory_lock=true
-      - xpack.monitoring.collection.enabled=true
-      - path.repo=/usr/share/elasticsearch/snapshot
-      - discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3,elasticsearch4,elasticsearch5,elasticsearch6
-      - discovery.zen.minimum_master_nodes=4
+      - node.name=node01
+      - discovery.seed_hosts=elasticsearch02,elasticsearch03,elasticsearch04,elasticsearch05
+    volumes:
+      - ${ELASTICSEARCH_VOLUMES_01_DATA}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT}:/usr/share/elasticsearch/snapshot
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    volumes:
-      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data1:/usr/share/elasticsearch/data
-      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
     logging:
       driver: "json-file"
       options:
-        max-size: "10k"
-        max-file: "1" 
+        max-size: "1m"
+        max-file: "1"
 
-  elasticsearch2:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+  elasticsearch02:
+    <<: *elasticsearch
+    env_file: togovar.env
     environment:
-      - ${TOGOVAR_ES_JAVA_OPTS:-"ES_JAVA_OPTS=-Xms16g -Xmx16g"}
-      - cluster.name=togovar-cluster
-      - node.name=togovar-node-2
-      - bootstrap.memory_lock=true
-      - xpack.monitoring.collection.enabled=true
-      - path.repo=/usr/share/elasticsearch/snapshot
-      - discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3,elasticsearch4,elasticsearch5,elasticsearch6
-      - discovery.zen.minimum_master_nodes=4
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+      - node.name=node02
+      - discovery.seed_hosts=elasticsearch01,elasticsearch03,elasticsearch04,elasticsearch05
     volumes:
-      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data2:/usr/share/elasticsearch/data
-      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10k"
-        max-file: "1" 
+      - ${ELASTICSEARCH_VOLUMES_02_DATA}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT}:/usr/share/elasticsearch/snapshot
+    ports: []
 
-  elasticsearch3:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+  elasticsearch03:
+    <<: *elasticsearch
+    env_file: togovar.env
     environment:
-      - ${TOGOVAR_ES_JAVA_OPTS:-"ES_JAVA_OPTS=-Xms16g -Xmx16g"}
-      - cluster.name=togovar-cluster
-      - node.name=togovar-node-3
-      - bootstrap.memory_lock=true
-      - xpack.monitoring.collection.enabled=true
-      - path.repo=/usr/share/elasticsearch/snapshot
-      - discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3,elasticsearch4,elasticsearch5,elasticsearch6
-      - discovery.zen.minimum_master_nodes=4
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+      - node.name=node03
+      - discovery.seed_hosts=elasticsearch01,elasticsearch02,elasticsearch04,elasticsearch05
     volumes:
-      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data3:/usr/share/elasticsearch/data
-      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10k"
-        max-file: "1" 
+      - ${ELASTICSEARCH_VOLUMES_03_DATA}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT}:/usr/share/elasticsearch/snapshot
+    ports: []
 
-  elasticsearch4:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+  elasticsearch04:
+    <<: *elasticsearch
+    env_file: togovar.env
     environment:
-      - ${TOGOVAR_ES_JAVA_OPTS:-"ES_JAVA_OPTS=-Xms16g -Xmx16g"}
-      - cluster.name=togovar-cluster
-      - node.name=togovar-node-4
-      - bootstrap.memory_lock=true
-      - xpack.monitoring.collection.enabled=true
-      - path.repo=/usr/share/elasticsearch/snapshot
-      - discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3,elasticsearch4,elasticsearch5,elasticsearch6
-      - discovery.zen.minimum_master_nodes=4
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+      - node.name=node04
+      - discovery.seed_hosts=elasticsearch01,elasticsearch02,elasticsearch03,elasticsearch05
     volumes:
-      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data4:/usr/share/elasticsearch/data
-      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10k"
-        max-file: "1" 
+      - ${ELASTICSEARCH_VOLUMES_04_DATA}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT}:/usr/share/elasticsearch/snapshot
+    ports: []
 
-  elasticsearch5:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+  elasticsearch05:
+    <<: *elasticsearch
+    env_file: togovar.env
     environment:
-      - ${TOGOVAR_ES_JAVA_OPTS:-"ES_JAVA_OPTS=-Xms16g -Xmx16g"}
-      - cluster.name=togovar-cluster
-      - node.name=togovar-node-5
-      - bootstrap.memory_lock=true
-      - xpack.monitoring.collection.enabled=true
-      - path.repo=/usr/share/elasticsearch/snapshot
-      - discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3,elasticsearch4,elasticsearch5,elasticsearch6
-      - discovery.zen.minimum_master_nodes=4
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+      - node.name=node05
+      - discovery.seed_hosts=elasticsearch01,elasticsearch02,elasticsearch03,elasticsearch04
     volumes:
-      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data5:/usr/share/elasticsearch/data
-      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10k"
-        max-file: "1" 
+      - ${ELASTICSEARCH_VOLUMES_05_DATA}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT}:/usr/share/elasticsearch/snapshot
+    ports: []
 
-  elasticsearch6:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
-    environment:
-      - ${TOGOVAR_ES_JAVA_OPTS:-"ES_JAVA_OPTS=-Xms16g -Xmx16g"}
-      - cluster.name=togovar-cluster
-      - node.name=togovar-node-6
-      - bootstrap.memory_lock=true
-      - xpack.monitoring.collection.enabled=true
-      - path.repo=/usr/share/elasticsearch/snapshot
-      - discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3,elasticsearch4,elasticsearch5,elasticsearch6
-      - discovery.zen.minimum_master_nodes=4
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/data6:/usr/share/elasticsearch/data
-      - ${TOGOVAR_DOCKER_STORE_BASE:-./data}/elasticsearch/snapshot:/usr/share/elasticsearch/snapshot
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.7.0
+    env_file: togovar.env
+    ports:
+      - ${KIBANA_PORT:-15601}:5601
     logging:
       driver: "json-file"
       options:
-        max-size: "10k"
-        max-file: "1" 
+        max-size: "1m"
+        max-file: "1"
 
 volumes:
   nginx_www:
+    name: togovar_docker_nginx_www_${VERSION}
     driver: local
   app_bundle:
+    name: togovar_docker_app_bundle_${VERSION}
     driver: local
   app_log:
+    name: togovar_docker_app_log_${VERSION}
     driver: local
   app_node_modules:
+    name: togovar_docker_app_node_modules_${VERSION}
     driver: local
   app_tmp:
+    name: togovar_docker_app_tmp_${VERSION}
     driver: local
