@@ -1,24 +1,27 @@
-# JBrowse
-#  Alternative JBrowse setup needed if you use plugins
-#   https://jbrowse.org/docs/installation.html#alternative-jbrowse-setup-needed-if-you-use-plugins
+FROM node:lts-buster
 
-FROM centos:centos7 
-ENV DEBIAN_FRONTEND=noninteractive
+RUN apt update && \
+    apt install -y --no-install-recommends \
+      build-essential \
+      libpng-dev \
+      zlib1g-dev \
+      libgd-dev \
+      samtools \
+      tabix && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN yum update -y && \
-    yum groupinstall -y "Development Tools" && \
-    yum install -y epel-release && \
-    yum install -y zlib-devel perl-ExtUtils-MakeMaker nginx which && \
-    yum install -y https://rpm.nodesource.com/pub_11.x/el/7/x86_64/nodesource-release-el7-1.noarch.rpm nodejs
+RUN npm install -g http-server
 
-WORKDIR /usr/share/nginx/html/
+WORKDIR /var/www
 
-RUN git config --global http.sslverify false && \
-    git clone --recursive https://github.com/togovar/jbrowse 
+ARG branch=togovar
 
-RUN cd jbrowse && ./setup.sh 
+RUN git clone "https://github.com/togovar/jbrowse.git" -b "${branch}" . && \
+    ./setup.sh && \
+    rm .htaccess
 
-COPY docker-entrypoint.sh /
-RUN chmod +x /docker-entrypoint.sh
+ADD http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig /usr/local/bin/bedGraphToBigWig
 
-CMD ["/docker-entrypoint.sh"]
+CMD ["http-server", "-d", "false"]
+
+EXPOSE 8080
