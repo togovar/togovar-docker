@@ -5,9 +5,9 @@ services:
     image: nginx:1.17
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - app_tmp:/app/tmp
       - nginx_www:/var/www
       - ${PUBLIC_DIR}:/var/www/public
+      - app_tmp:/app/tmp
     ports:
       - ${NGINX_PORT:-80}:80
     logging:
@@ -28,17 +28,42 @@ services:
 
   app:
     build: docker/ruby
-    image: togovar:#{VERSION}
+    image: togovar_app:${VERSION}
     env_file: togovar.env
     volumes:
       - ./app:/app
-      - ./stanza:/stanza
+      - ./stanza:/usr/local/stanza
+      - nginx_www:/var/www
+      - ${PUBLIC_DIR}:/var/www/public
       - app_bundle:/usr/local/bundle
       - app_log:/app/log
       - app_node_modules:/app/node_modules
       - app_tmp:/app/tmp
-      - nginx_www:/var/www
-      - ${PUBLIC_DIR}:/var/www/public
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+
+  stanza:
+    build: docker/stanza
+    image: togovar_stanza:${VERSION}
+    env_file: togovar.env
+    volumes:
+      - ./stanza:/stanza
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+
+  jbrowse:
+    build: docker/jbrowse
+    image: togovar_jbrowse:${VERSION}
+    env_file: togovar.env
+    volumes:
+      - ./docker/jbrowse/template/jbrowse_conf.json:/var/www/jbrowse_conf.json:ro
+      - ${JBROWSE_VOLUMES_DATA}:/var/www/data
     logging:
       driver: "json-file"
       options:
@@ -68,11 +93,6 @@ services:
       options:
         max-size: "1m"
         max-file: "1"
-
-  jbrowse:
-    build: docker/jbrowse
-    volumes:
-      - ${JBROWSE_VOLUMES_DATA}:/usr/share/nginx/html/jbrowse/data
 
   elasticsearch01: &elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
@@ -150,17 +170,17 @@ services:
 
 volumes:
   nginx_www:
-    name: togovar_docker_nginx_www_${VERSION}
+    name: togovar_nginx_www_${VERSION}
     driver: local
   app_bundle:
-    name: togovar_docker_app_bundle_${VERSION}
+    name: togovar_app_bundle_${VERSION}
     driver: local
   app_log:
-    name: togovar_docker_app_log_${VERSION}
+    name: togovar_app_log_${VERSION}
     driver: local
   app_node_modules:
-    name: togovar_docker_app_node_modules_${VERSION}
+    name: togovar_app_node_modules_${VERSION}
     driver: local
   app_tmp:
-    name: togovar_docker_app_tmp_${VERSION}
+    name: togovar_app_tmp_${VERSION}
     driver: local
