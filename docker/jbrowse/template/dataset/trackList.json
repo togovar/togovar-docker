@@ -1,0 +1,137 @@
+{
+  "formatVersion" : 1,
+  "defaultLocation": "1..50000",
+
+  "tracks" : [
+    {
+      "category" : "Reference sequence",
+      "key" : "Reference sequence",
+      "label": "DNA",
+      "seqType" : "dna",
+      "type": "SequenceTrack",
+      "chunkSize": 20000,
+      "urlTemplate": "seq/{refseq}/"
+    },
+    {
+      "category": "Gene",
+      "key": "Gene",
+      "label": "gene",
+      "storeClass": "JBrowse/Store/SeqFeature/TogoGenomeSPARQL",
+      "type": "JBrowse/View/Track/CanvasFeatures",
+      "glyph": "JBrowse/View/FeatureGlyph/Gene",
+      "style": {
+        "featureScale": 0.0001,
+        "labelScale": 0.0001,
+        "descriptionScale": 0.001,
+        "color": "function(r){var o=\"#67b6c9\";switch(r.data.so){case\"http://purl.obolibrary.org/obo/SO_0000316\":o=\"#8bba30\";break;case\"http://purl.obolibrary.org/obo/SO_0000253\":o=\"#ef6391\";break;case\"http://purl.obolibrary.org/obo/SO_0000252\":o=\"#e69023\"}return o};"
+      },
+      "urlTemplate": "https://togovar.biosciencedbc.jp/sparqlist/api/jbrowse_gene_track_grch37",
+      "queryTemplate": "{ref}:{start}:{end}@https://togovar.biosciencedbc.jp/sparql"
+    },
+    {
+      "category": "Variation",
+      "key": "variation",
+      "label": "variation",
+      "storeClass": "JBrowse/Store/SeqFeature/VCFTabix",
+      "urlTemplate": "vcf/TogoVar.vcf.gz",
+      "type": "JBrowse/View/Track/HTMLVariants",
+      "onClick": "function() { window.open('/variant/' + this.feature.get('name')); }"
+    },
+    {
+      "category": "Frequency",
+      "key": "GEM-J WGA",
+      "label": "gem_j_wga",
+      "type": "JBrowse/View/Track/Wiggle/XYPlot",
+      "storeClass": "JBrowse/Store/BigWig",
+      "urlTemplate": "freq/gem_j_wga.bw",
+      "metadata": {
+        "Category": "Frequency"
+      },
+      "min_score": 0,
+      "max_score": 7,
+      "style": {
+        "pos_color": "#DC2828"
+      }
+    },
+    {
+      "category": "Frequency",
+      "key": "ToMMo 4.7KJPN",
+      "label": "tommo_4.7kjpn",
+      "type": "JBrowse/View/Track/Wiggle/XYPlot",
+      "storeClass": "JBrowse/Store/BigWig",
+      "urlTemplate": "freq/tommo_4.7kjpn.bw",
+      "metadata": {
+        "Category": "Frequency"
+      },
+      "min_score": 0,
+      "max_score": 7,
+      "style": {
+        "pos_color": "#abe03f"
+      }
+    },
+    {
+      "category": "Frequency",
+      "key": "JGA-NGS",
+      "label": "jga_ngs",
+      "type": "JBrowse/View/Track/Wiggle/XYPlot",
+      "storeClass": "JBrowse/Store/BigWig",
+      "urlTemplate": "freq/jga_ngs.bw",
+      "metadata": {
+        "Category": "Frequency"
+      },
+      "min_score": 0,
+      "max_score": 7,
+      "style": {
+        "pos_color": "#46B9CC"
+      }
+    },
+    {
+      "category": "Frequency",
+      "key": "JGA-SNP",
+      "label": "jga_snp",
+      "type": "JBrowse/View/Track/Wiggle/XYPlot",
+      "storeClass": "JBrowse/Store/BigWig",
+      "urlTemplate": "freq/jga_snp.bw",
+      "metadata": {
+        "Category": "Frequency"
+      },
+      "min_score": 0,
+      "max_score": 7,
+      "style": {
+        "pos_color": "#46B9CC"
+      }
+    },
+    {
+      "category": "Frequency",
+      "key": "HGVD",
+      "label": "hgvd",
+      "type": "JBrowse/View/Track/Wiggle/XYPlot",
+      "storeClass": "JBrowse/Store/BigWig",
+      "urlTemplate": "freq/hgvd.bw",
+      "metadata": {
+        "Category": "Frequency"
+      },
+      "min_score": 0,
+      "max_score": 7,
+      "style": {
+        "pos_color": "#005B80"
+      }
+    },
+    {
+      "category": "Frequency",
+      "key": "ExAC",
+      "label": "exac",
+      "type": "JBrowse/View/Track/Wiggle/XYPlot",
+      "storeClass": "JBrowse/Store/BigWig",
+      "urlTemplate": "freq/exac.bw",
+      "metadata": {
+        "Category": "Frequency"
+      },
+      "min_score": 0,
+      "max_score": 7,
+      "style": {
+        "pos_color": "#94928d"
+      }
+    }
+  ]
+}
