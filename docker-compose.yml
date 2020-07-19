@@ -7,7 +7,7 @@ services:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
       - nginx_www:/var/www
       - ${PUBLIC_DIR}:/var/www/public
-      - app_tmp:/app/tmp
+      - app_sockets:/tmp/sockets
     ports:
       - ${NGINX_PORT:-80}:80
     logging:
@@ -39,6 +39,7 @@ services:
       - app_log:/app/log
       - app_node_modules:/app/node_modules
       - app_tmp:/app/tmp
+      - app_sockets:/app/tmp/sockets
     logging:
       driver: "json-file"
       options:
@@ -183,4 +184,7 @@ volumes:
     driver: local
   app_tmp:
     name: togovar_app_tmp_${VERSION}
+    driver: local
+  app_sockets:
+    name: togovar_app_sockets_${VERSION}
     driver: local
