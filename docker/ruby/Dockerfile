@@ -12,7 +12,7 @@ COPY docker-entrypoint.sh /usr/local/bin/
 
 WORKDIR app
 
-VOLUME /app/node_modules /app/log /app/public /app/tmp
+VOLUME /app/node_modules /app/log /app/public /app/tmp/pids /app/tmp/sockets
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["unicorn", "-c", "config/unicorn.rb"]
