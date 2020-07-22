@@ -6,7 +6,7 @@ services:
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
       - nginx_www:/var/www
-      - ${PUBLIC_DIR}:/var/www/public
+      - ${PUBLIC_DIR:-/var/togovar/public}:/var/www/public
       - app_sockets:/tmp/sockets
     ports:
       - ${NGINX_PORT:-80}:80
@@ -28,13 +28,13 @@ services:
 
   app:
     build: docker/ruby
-    image: togovar_app:${VERSION}
+    image: togovar_app:${VERSION:-2020.07}
     env_file: togovar.env
     volumes:
       - ./app:/app
       - ./stanza:/usr/local/stanza
       - nginx_www:/var/www
-      - ${PUBLIC_DIR}:/var/www/public
+      - ${PUBLIC_DIR:-/var/togovar/public}:/var/www/public
       - app_bundle:/usr/local/bundle
       - app_log:/app/log
       - app_node_modules:/app/node_modules
@@ -48,7 +48,7 @@ services:
 
   stanza:
     build: docker/stanza
-    image: togovar_stanza:${VERSION}
+    image: togovar_stanza:${VERSION:-2020.07}
     env_file: togovar.env
     volumes:
       - ./stanza:/stanza
@@ -60,11 +60,11 @@ services:
 
   jbrowse:
     build: docker/jbrowse
-    image: togovar_jbrowse:${VERSION}
+    image: togovar_jbrowse:${VERSION:-2020.07}
     env_file: togovar.env
     volumes:
       - ./docker/jbrowse/template/jbrowse_conf.json:/var/www/jbrowse_conf.json:ro
-      - ${JBROWSE_VOLUMES_DATA}:/var/www/data
+      - ${JBROWSE_VOLUMES_DATA:-/var/togovar/jbrowse}:/var/www/data
     logging:
       driver: "json-file"
       options:
@@ -87,8 +87,8 @@ services:
     env_file: togovar.env
     volumes:
       - ./docker/virtuoso/bin:/usr/local/bin
-      - ${VIRTUOSO_VOLUMES_LOAD}:/load:ro
-      - ${VIRTUOSO_VOLUMES_DATA}:/data
+      - ${VIRTUOSO_VOLUMES_LOAD:-/var/togovar/virtuoso/load}:/load:ro
+      - ${VIRTUOSO_VOLUMES_DATA:-/var/togovar/virtuoso/data}:/data
     logging:
       driver: "json-file"
       options:
@@ -102,8 +102,8 @@ services:
       - node.name=node01
       - discovery.seed_hosts=elasticsearch02,elasticsearch03,elasticsearch04,elasticsearch05
     volumes:
-      - ${ELASTICSEARCH_VOLUMES_01_DATA}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT}:/usr/share/elasticsearch/snapshot
+      - ${ELASTICSEARCH_VOLUMES_01_DATA:-/var/togovar/elasticsearch/01/data}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-/var/togovar/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     ulimits:
       memlock:
         soft: -1
@@ -121,8 +121,8 @@ services:
       - node.name=node02
       - discovery.seed_hosts=elasticsearch01,elasticsearch03,elasticsearch04,elasticsearch05
     volumes:
-      - ${ELASTICSEARCH_VOLUMES_02_DATA}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT}:/usr/share/elasticsearch/snapshot
+      - ${ELASTICSEARCH_VOLUMES_02_DATA:-/var/togovar/elasticsearch/02/data}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-/var/togovar/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     ports: []
 
   elasticsearch03:
@@ -132,8 +132,8 @@ services:
       - node.name=node03
       - discovery.seed_hosts=elasticsearch01,elasticsearch02,elasticsearch04,elasticsearch05
     volumes:
-      - ${ELASTICSEARCH_VOLUMES_03_DATA}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT}:/usr/share/elasticsearch/snapshot
+      - ${ELASTICSEARCH_VOLUMES_03_DATA:-/var/togovar/elasticsearch/03/data}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-/var/togovar/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     ports: []
 
   elasticsearch04:
@@ -143,8 +143,8 @@ services:
       - node.name=node04
       - discovery.seed_hosts=elasticsearch01,elasticsearch02,elasticsearch03,elasticsearch05
     volumes:
-      - ${ELASTICSEARCH_VOLUMES_04_DATA}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT}:/usr/share/elasticsearch/snapshot
+      - ${ELASTICSEARCH_VOLUMES_04_DATA:-/var/togovar/elasticsearch/04/data}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-/var/togovar/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     ports: []
 
   elasticsearch05:
@@ -154,15 +154,15 @@ services:
       - node.name=node05
       - discovery.seed_hosts=elasticsearch01,elasticsearch02,elasticsearch03,elasticsearch04
     volumes:
-      - ${ELASTICSEARCH_VOLUMES_05_DATA}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT}:/usr/share/elasticsearch/snapshot
+      - ${ELASTICSEARCH_VOLUMES_05_DATA:-/var/togovar/elasticsearch/05/data}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-/var/togovar/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     ports: []
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.7.0
     env_file: togovar.env
     ports:
-      - 127.0.0.1:${KIBANA_PORT:-15601}:5601
+      - 127.0.0.1:${KIBANA_PORT:-5601}:5601
     logging:
       driver: "json-file"
       options:
@@ -171,20 +171,20 @@ services:
 
 volumes:
   nginx_www:
-    name: togovar_nginx_www_${VERSION}
+    name: togovar_nginx_www_${VERSION:-2020.07}
     driver: local
   app_bundle:
-    name: togovar_app_bundle_${VERSION}
+    name: togovar_app_bundle_${VERSION:-2020.07}
     driver: local
   app_log:
-    name: togovar_app_log_${VERSION}
+    name: togovar_app_log_${VERSION:-2020.07}
     driver: local
   app_node_modules:
-    name: togovar_app_node_modules_${VERSION}
+    name: togovar_app_node_modules_${VERSION:-2020.07}
     driver: local
   app_tmp:
-    name: togovar_app_tmp_${VERSION}
+    name: togovar_app_tmp_${VERSION:-2020.07}
     driver: local
   app_sockets:
-    name: togovar_app_sockets_${VERSION}
+    name: togovar_app_sockets_${VERSION:-2020.07}
     driver: local
