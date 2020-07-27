@@ -3,6 +3,9 @@
 if [[ $1 == "unicorn" ]]; then
   bundle install
   yarn install
+
+  [[ -n "$WEBPACKER_FORCE_COMPILE" ]] && rails webpacker:clobber
+
   rails webpacker:compile
 
   cp -rv /app/public/* /var/www/
