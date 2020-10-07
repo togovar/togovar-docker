@@ -5,7 +5,7 @@ RUN curl -sL "https://deb.nodesource.com/setup_12.x" | bash - && \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list
 
 RUN apt update && \
-    apt install -y --no-install-recommends nodejs yarn && \
+    apt install -y --no-install-recommends ca-certificates nodejs yarn && \
     rm -rf /var/lib/apt/lists/*
 
 COPY docker-entrypoint.sh /usr/local/bin/
