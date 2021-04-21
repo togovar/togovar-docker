@@ -32,7 +32,6 @@ services:
     env_file: togovar.env
     volumes:
       - ./app:/app
-      - ./stanza:/usr/local/stanza
       - nginx_www:/var/www
       - ${PUBLIC_DIR:-/var/togovar/public}:/var/www/public
       - app_bundle:/usr/local/bundle
@@ -40,18 +39,6 @@ services:
       - app_node_modules:/app/node_modules
       - app_tmp:/app/tmp
       - app_sockets:/app/tmp/sockets
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1m"
-        max-file: "1"
-
-  stanza:
-    build: docker/stanza
-    image: togovar_stanza:${VERSION:-2020.07}
-    env_file: togovar.env
-    volumes:
-      - ./stanza:/stanza
     logging:
       driver: "json-file"
       options:
