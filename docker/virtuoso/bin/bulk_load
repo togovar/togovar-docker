@@ -3,7 +3,7 @@
 set -e
 
 # set default value
-ISQL=${ISQL:-isql-v}
+ISQL=${ISQL:-isql}
 ISQL_PORT=${ISQL_PORT:-1111}
 DBA_USER=${DBA_USER:-dba}
 DBA_PASSWORD=${DBA_PASSWORD:-dba}
@@ -89,7 +89,7 @@ while [[ $# -gt 0 ]]; do
     shift
     shift
     ;;
-  -* | --*)
+  -*)
     echo "Unknown option: $1" >&2
     exit 1
     ;;
@@ -107,7 +107,7 @@ function isql_exec() {
 }
 
 function list() {
-  isql_exec "SELECT ll_file, ll_graph, ll_state FROM dba.load_list;"
+  isql_exec "SELECT ll_file AS file, ll_graph AS graph, (CASE ll_state WHEN 0 THEN 'not started' WHEN 1 THEN 'going' WHEN 2 THEN 'done' ELSE 'unknown' END) AS state, CONCAT(CAST((ll_done - ll_started) / 3600 AS INT), 'h ' ,MOD((ll_done - ll_started) / 60, 60), 'm ', MOD(ll_done - ll_started, 60), 's') AS took FROM dba.load_list;"
 }
 
 function count_status() {
@@ -135,7 +135,7 @@ STATE_TO_BE_LOADED=0
 STATE_IN_PROGRESS=1
 STATE_COMPLETE=2
 
-function count_remnant() {
+function count_remaining() {
   count_status $STATE_TO_BE_LOADED
 }
 
@@ -159,7 +159,7 @@ function server_alive() {
 }
 
 function status() {
-  echo "remnant: $(count_remnant)"
+  echo "remaining: $(count_remaining)"
   echo "processing: $(count_processing)"
   echo "error: $(count_error)"
 }
@@ -193,8 +193,8 @@ fi
 
 isql_exec "ld_dir('${DIRECTORY}', '${MASK}', '${GRAPH}');"
 
-remnant=$(count_remnant)
-if [[ $remnant == "0" ]]; then
+remaining=$(count_remaining)
+if [[ $remaining == "0" ]]; then
   echo "Nothing to load"
   exit 1
 fi
