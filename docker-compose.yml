@@ -83,7 +83,7 @@ services:
         max-file: "1"
 
   virtuoso:
-    image: tenforce/virtuoso:virtuoso7.2.4
+    image: openlink/virtuoso-opensource-7:7.2
     env_file: togovar.env
     volumes:
       - ./docker/virtuoso/bin:/usr/local/bin
@@ -96,7 +96,7 @@ services:
         max-file: "1"
 
   elasticsearch01: &elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+    image: elasticsearch:7.13.0
     env_file: togovar.env
     environment:
       - node.name=node01
@@ -157,17 +157,6 @@ services:
       - ${ELASTICSEARCH_VOLUMES_05_DATA:-/var/togovar/elasticsearch/05/data}:/usr/share/elasticsearch/data
       - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-/var/togovar/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     ports: []
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.7.0
-    env_file: togovar.env
-    ports:
-      - 127.0.0.1:${KIBANA_PORT:-5601}:5601
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1m"
-        max-file: "1"
 
 volumes:
   nginx_www:
