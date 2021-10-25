@@ -1,6 +1,6 @@
 FROM node:lts-buster
 
-RUN apt update && \
+RUN apt --allow-releaseinfo-change update && \
     apt install -y --no-install-recommends \
       build-essential \
       libpng-dev \
