@@ -74,9 +74,9 @@ services:
     image: openlink/virtuoso-opensource-7:7.2
     env_file: togovar.env
     volumes:
-      - ./docker/virtuoso/bin:/usr/local/bin
-      - ${VIRTUOSO_VOLUMES_LOAD:-/var/togovar/virtuoso/load}:/load:ro
-      - ${VIRTUOSO_VOLUMES_DATA:-/var/togovar/virtuoso/data}:/data
+      - ${VIRTUOSO_VOLUMES_LOAD:-./data/virtuoso/load}:/load
+      - ${VIRTUOSO_VOLUMES_DATABASE:-./data/virtuoso/database}:/database
+      - ${VIRTUOSO_VOLUMES_SETTINGS:-./data/virtuoso/settings}:/settings
     logging:
       <<: *logging
 
