@@ -96,8 +96,8 @@ services:
       bootstrap.memory_lock: "true"
       path.repo: /usr/share/elasticsearch/snapshot
     volumes:
-      - ${ELASTICSEARCH_VOLUMES_01_DATA:-/var/togovar/elasticsearch/01/data}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-/var/togovar/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
+      - ${ELASTICSEARCH_VOLUMES_01_DATA:-./data/elasticsearch/01/data}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     logging:
       <<: *logging
 
@@ -108,8 +108,8 @@ services:
       node.name: node02
       discovery.seed_hosts: elasticsearch01,elasticsearch03,elasticsearch04,elasticsearch05
     volumes:
-      - ${ELASTICSEARCH_VOLUMES_02_DATA:-/var/togovar/elasticsearch/02/data}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-/var/togovar/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
+      - ${ELASTICSEARCH_VOLUMES_02_DATA:-./data/elasticsearch/02/data}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     ports: []
 
   elasticsearch03:
@@ -119,8 +119,8 @@ services:
       node.name: node03
       discovery.seed_hosts: elasticsearch01,elasticsearch02,elasticsearch04,elasticsearch05
     volumes:
-      - ${ELASTICSEARCH_VOLUMES_03_DATA:-/var/togovar/elasticsearch/03/data}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-/var/togovar/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
+      - ${ELASTICSEARCH_VOLUMES_03_DATA:-./data/elasticsearch/03/data}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     ports: []
 
   elasticsearch04:
@@ -130,8 +130,8 @@ services:
       node.name: node04
       discovery.seed_hosts: elasticsearch01,elasticsearch02,elasticsearch03,elasticsearch05
     volumes:
-      - ${ELASTICSEARCH_VOLUMES_04_DATA:-/var/togovar/elasticsearch/04/data}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-/var/togovar/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
+      - ${ELASTICSEARCH_VOLUMES_04_DATA:-./data/elasticsearch/04/data}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     ports: []
 
   elasticsearch05:
@@ -141,8 +141,8 @@ services:
       node.name: node05
       discovery.seed_hosts: elasticsearch01,elasticsearch02,elasticsearch03,elasticsearch04
     volumes:
-      - ${ELASTICSEARCH_VOLUMES_05_DATA:-/var/togovar/elasticsearch/05/data}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-/var/togovar/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
+      - ${ELASTICSEARCH_VOLUMES_05_DATA:-./data/elasticsearch/05/data}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     ports: []
 
 volumes:
