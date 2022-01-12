@@ -29,6 +29,8 @@ TOGOVAR_SECRET_KEY_BASE=changeme
 
 # SPARQList settings
 TOGOVAR_SPARQLIST_ADMIN_PASSWORD=changeme
+SPARQLIST_TOGOVAR_SPARQL=https://togovar.biosciencedbc.jp/sparql
+SPARQLIST_TOGOVAR_SEARCH=https://togovar.biosciencedbc.jp/search
 ```
 
 ## Run application

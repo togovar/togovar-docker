@@ -63,7 +63,7 @@ services:
       <<: *logging
 
   sparqlist:
-    image: dbcls/sparqlist:snapshot-1f7dbc9
+    image: ghcr.io/dbcls/sparqlist:snapshot-67162ef
     env_file: togovar.env
     volumes:
       - ./sparqlist:/app/repository
