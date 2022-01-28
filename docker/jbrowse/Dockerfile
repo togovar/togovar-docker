@@ -1,4 +1,4 @@
-FROM node:lts-buster
+FROM node:14-buster
 
 RUN apt --allow-releaseinfo-change update && \
     apt install -y --no-install-recommends \
