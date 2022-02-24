@@ -39,7 +39,7 @@ services:
     build: docker/virtuoso
     environment:
       DBA_PASSWORD: dba
-      SPARQL_UPDATE: false
+      SPARQL_UPDATE: "false"
       DEFAULT_GRAPH: http://togovar.biosciencedbc.jp
       VIRT_Parameters_DirsAllowed: /load
       VIRT_SPARQL_MaxQueryCostEstimationTime: 6000
