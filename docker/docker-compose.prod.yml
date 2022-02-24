@@ -21,7 +21,7 @@ services:
 
   app:
     build: docker/ruby
-    image: togovar/app
+    image: togovar_app:${VERSION:-latest}
     environment:
       NODE_ENV: production
       RAILS_ENV: production
@@ -48,7 +48,7 @@ services:
 
   jbrowse:
     build: docker/jbrowse
-    image: togovar/jbrowse
+    image: togovar_jbrowse:${VERSION:-latest}
     volumes:
       - ./docker/jbrowse/template/jbrowse_conf.json:/var/www/jbrowse_conf.json:ro
       - ${JBROWSE_VOLUMES_DATA:-./data/jbrowse/data}:/var/www/data
@@ -83,6 +83,7 @@ services:
 
   virtuoso:
     build: docker/virtuoso
+    image: togovar_virtuoso:${VERSION:-latest}
     environment:
       DBA_PASSWORD: dba
       SPARQL_UPDATE: "false"
