@@ -88,7 +88,11 @@ module Virtuoso
   def count(field = nil, where = nil)
     ret = ISQL.exec "SELECT COUNT(#{field || '*'}) FROM dba.load_list#{" WHERE #{where}" if where};"
 
-    Integer(ret.split("\n").last, exception: false)
+    begin
+      Integer(ret.split("\n").last)
+    rescue StandardError
+      nil
+    end
   end
 
   def count_state(status)
