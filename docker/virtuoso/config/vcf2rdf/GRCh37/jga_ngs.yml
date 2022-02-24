@@ -1,0 +1,92 @@
+---
+
+# Set base IRI if needed.
+base: ~
+
+# Additional namespaces.
+namespaces: ~
+
+# Remove unnecessary keys to convert.
+info:
+  - AC
+  - AN
+  - AF
+
+# Sequence reference mapping.
+reference:
+  "1":
+    name: "1"
+    reference: "http://identifiers.org/hco/1/GRCh37"
+  "10":
+    name: "10"
+    reference: "http://identifiers.org/hco/10/GRCh37"
+  "11":
+    name: "11"
+    reference: "http://identifiers.org/hco/11/GRCh37"
+  "12":
+    name: "12"
+    reference: "http://identifiers.org/hco/12/GRCh37"
+  "13":
+    name: "13"
+    reference: "http://identifiers.org/hco/13/GRCh37"
+  "14":
+    name: "14"
+    reference: "http://identifiers.org/hco/14/GRCh37"
+  "15":
+    name: "15"
+    reference: "http://identifiers.org/hco/15/GRCh37"
+  "16":
+    name: "16"
+    reference: "http://identifiers.org/hco/16/GRCh37"
+  "17":
+    name: "17"
+    reference: "http://identifiers.org/hco/17/GRCh37"
+  "18":
+    name: "18"
+    reference: "http://identifiers.org/hco/18/GRCh37"
+  "19":
+    name: "19"
+    reference: "http://identifiers.org/hco/19/GRCh37"
+  "2":
+    name: "2"
+    reference: "http://identifiers.org/hco/2/GRCh37"
+  "20":
+    name: "20"
+    reference: "http://identifiers.org/hco/20/GRCh37"
+  "21":
+    name: "21"
+    reference: "http://identifiers.org/hco/21/GRCh37"
+  "22":
+    name: "22"
+    reference: "http://identifiers.org/hco/22/GRCh37"
+  "3":
+    name: "3"
+    reference: "http://identifiers.org/hco/3/GRCh37"
+  "4":
+    name: "4"
+    reference: "http://identifiers.org/hco/4/GRCh37"
+  "5":
+    name: "5"
+    reference: "http://identifiers.org/hco/5/GRCh37"
+  "6":
+    name: "6"
+    reference: "http://identifiers.org/hco/6/GRCh37"
+  "7":
+    name: "7"
+    reference: "http://identifiers.org/hco/7/GRCh37"
+  "8":
+    name: "8"
+    reference: "http://identifiers.org/hco/8/GRCh37"
+  "9":
+    name: "9"
+    reference: "http://identifiers.org/hco/9/GRCh37"
+  MT:
+    name: MT
+    reference: "http://identifiers.org/hco/MT/GRCh37"
+  X:
+    name: X
+    reference: "http://identifiers.org/hco/X/GRCh37"
+  Y:
+    name: Y
+    reference: "http://identifiers.org/hco/Y/GRCh37"
+

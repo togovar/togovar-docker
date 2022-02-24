@@ -2,33 +2,37 @@
 
 ## Configuration
 
-### .env example
+`.env`
 
-```bash
-$ cat .env
-# Docker compose settings
-TOGOVAR_DOCKER_PORT=80
-TOGOVAR_DOCKER_LOAD_BASE=/var/togovar/load
-TOGOVAR_DOCKER_STORE_BASE=/var/togovar/data
-TOGOVAR_DOCKER_PUBLIC_DIR=/var/www/public
-TOGOVAR_DOCKER_JBROWSE_DATA=/var/www/jbrowse/data
+Environment variables used by docker compose file
 
-# TogoVar application settings
-TOGOVAR_ENDPOINT_SEARCH=http://togovar.biosciencedbc.jp/search
-TOGOVAR_ENDPOINT_SPARQL=https://togovar.biosciencedbc.jp/sparql
-TOGOVAR_ENDPOINT_STANZA=https://togovar.biosciencedbc.jp/stanza
-TOGOVAR_ENDPOINT_SPARQLIST=https://togovar.biosciencedbc.jp/sparqlist
-TOGOVAR_ENDPOINT_JBROWSE=https://togovar.biosciencedbc.jp/jbrowse
+```
+COMPOSE_PROJECT_NAME=dev # (optional) set to avoid conflicting volume names
 
-TOGOVAR_RDF_BASE_URI=http://togovar.biosciencedbc.jp
-TOGOVAR_RDF_LOAD_DIR=/load
+NGINX_PORT=80
 
-TOGOVAR_PUBLIC_DIR=/var/www/public
+JBROWSE_VOLUMES_DATA=./data/jbrowse/data
 
-TOGOVAR_SECRET_KEY_BASE=changeme
+VIRTUOSO_VOLUMES_LOAD=./data/virtuoso/load
+VIRTUOSO_VOLUMES_DATABASE=./data/virtuoso/database
+VIRTUOSO_VOLUMES_SETTINGS=./data/virtuoso/settings
 
-# SPARQList settings
-TOGOVAR_SPARQLIST_ADMIN_PASSWORD=changeme
+ELASTICSEARCH_VOLUMES_01_DATA=./data/elasticsearch/01
+ELASTICSEARCH_VOLUMES_02_DATA=./data/elasticsearch/02
+ELASTICSEARCH_VOLUMES_03_DATA=./data/elasticsearch/03
+ELASTICSEARCH_VOLUMES_04_DATA=./data/elasticsearch/04
+ELASTICSEARCH_VOLUMES_05_DATA=./data/elasticsearch/05
+ELASTICSEARCH_VOLUMES_SNAPSHOT=./data/elasticsearch/snapshot
+```
+
+## Initialize
+
+```
+$ ./bin/initialize
+```
+
+```
+$ docker-compose run --rm virtuoso rdf convert -c /config/GRCh37.yml
 ```
 
 ## Run application
@@ -38,4 +42,21 @@ $ git submodule update --init --recursive
 $ cd jbrowse && ./setup.sh && cd -
 $ docker-compose build
 $ docker-compose up -d
+```
+
+## Use kibana
+
+```yaml
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.13.0
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch01:9200
+      I18N_LOCALE: ja-JP
+    depends_on:
+      - elasticsearch01
+      - elasticsearch02
+      - elasticsearch03
+      - elasticsearch04
+      - elasticsearch05
+    <<: *logging
 ```

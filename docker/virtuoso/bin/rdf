@@ -1,0 +1,309 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'date'
+require 'open3'
+require 'optparse'
+require 'uri'
+require 'yaml'
+
+ISQL_CMD = ENV['ISQL'] || 'isql'
+ISQL_PORT = ENV['ISQL_PORT'] || 1111
+DBA_USER = ENV['DBA_USER'] || 'dba'
+DBA_PASSWORD = ENV['DBA_PASSWORD'] || 'dba'
+PARALLEL = 5
+
+class Object
+  def blank?
+    nil? || (respond_to?(:empty?) && empty?)
+  end
+
+  def present?
+    !blank?
+  end
+end
+
+def readable_duration(seconds)
+  s = (seconds % 60).round(3)
+  m = (seconds / 60).to_i % 60
+  h = (seconds / 60 / 60).to_i % 24
+  d = (seconds / 60 / 60 / 24).to_i
+
+  elem = []
+  elem << "#{d}d" if d.positive?
+  elem << "#{h}h" if h.positive? || d.positive?
+  elem << "#{m}m" if m.positive? || h.positive? || d.positive?
+  elem << "#{s}s"
+
+  elem.join(' ')
+end
+
+def debug(&block)
+  warn block.call if ENV['DEBUG'].present?
+end
+
+module ISQL
+  module_function
+
+  def exec(cmd)
+    cmd = "#{ISQL_CMD} -U #{DBA_USER} -P #{DBA_PASSWORD} -S #{ISQL_PORT} VERBOSE=OFF EXEC=\"#{cmd}\""
+    debug { cmd }
+
+    out = ''
+
+    Open3.popen3(cmd) do |stdin, stdout, _stderr, wait_thr|
+      stdin.close
+      out = stdout.read
+      debug { "status: #{wait_thr.value}" }
+    end
+
+    out
+  end
+end
+
+module Virtuoso
+  module LoadStatus
+    ADDED = 0
+    IN_PROGRESS = 1
+    COMPLETE = 2
+  end
+
+  module_function
+
+  def select(fields = nil, where = nil)
+    ISQL.exec "SELECT #{fields || '*'} FROM dba.load_list#{" WHERE #{where}" if where};"
+  end
+
+  def graph
+    ISQL.exec 'SPARQL SELECT DISTINCT ?g WHERE { GRAPH ?g { ?s ?p ?o . } };'
+  end
+
+  def list
+    Virtuoso.select ['ll_file AS file',
+                     'll_graph AS graph',
+                     "(CASE ll_state WHEN 0 THEN 'not started' WHEN 1 THEN 'going' WHEN 2 THEN 'done' ELSE 'unknown' END) AS state",
+                     "CONCAT(CAST((ll_done - ll_started) / 3600 AS INT), 'h ' ,MOD((ll_done - ll_started) / 60, 60), 'm ', MOD(ll_done - ll_started, 60), 's') AS took"].join(', ')
+  end
+
+  def count(field = nil, where = nil)
+    ret = ISQL.exec "SELECT COUNT(#{field || '*'}) FROM dba.load_list#{" WHERE #{where}" if where};"
+
+    Integer(ret.split("\n").last, exception: false)
+  end
+
+  def count_state(status)
+    Virtuoso.count nil, "ll_state = #{status}"
+  end
+
+  def count_remaining
+    Virtuoso.count_state LoadStatus::ADDED
+  end
+
+  def count_processing
+    Virtuoso.count_state LoadStatus::IN_PROGRESS
+  end
+
+  def count_complete
+    Virtuoso.count_state LoadStatus::COMPLETE
+  end
+
+  def server_alive
+    Virtuoso.count.present?
+  end
+
+  def count_error
+    Virtuoso.count nil, 'll_error IS NOT NULL'
+  end
+
+  def list_error
+    Virtuoso.select 'll_file, ll_graph', 'll_error IS NOT NULL'
+  end
+
+  def reset_error
+    ISQL.exec 'DELETE FROM dba.load_list WHERE ll_error IS NOT NULL;'
+  end
+end
+
+# main
+
+options = {}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{$PROGRAM_NAME} [options] command"
+  opts.separator ''
+  opts.separator 'Options:'
+  opts.on('-c', '--config=FILE', 'Path to configuration YAML') { |v| options[:config] = v }
+  opts.separator ''
+  opts.separator 'Commands:'
+  opts.separator '    add        Add RDF file to load list'
+  opts.separator '    add_all    Add RDF file to load list'
+  opts.separator '    convert    Convert VCF to RDF with vcf2rdf [required options: config]'
+  opts.separator '    load       Load RDF [required options: config]'
+  opts.separator '    list       Print load list'
+  opts.separator '    status     Print load status'
+  opts.separator '    reset      Cancel load errors'
+end.parse!
+
+def check_convert_config(*config)
+  config.each do |c|
+    dir = c.dig('convert', 'directory')
+    raise "Missing required value: directory\n#{c.to_yaml}" if dir.blank?
+    raise "Not a directory: #{dir}" unless File.directory?(dir)
+
+    conf = c.dig('convert', 'config')
+    raise "Missing required value: config\n#{c.to_yaml}" if conf.blank?
+    raise "File not found: #{conf}" unless File.exist?(conf)
+  end
+end
+
+def rdf_convert(**options)
+  raise ArgumentError, 'Missing option: config' unless options[:config]
+
+  config = YAML.load_file(options[:config]).filter { |h| h.key?('convert') }
+
+  # configuration check
+  check_convert_config(*config)
+
+  config.each do |c|
+    dir = c.dig('convert', 'directory')
+    conf = c.dig('convert', 'config')
+
+    Dir.glob(File.join(dir, '*.vcf.gz')) do |input|
+      puts "converting #{input}"
+
+      output = input.sub(/\.vcf\.b?gz$/, '.ttl.gz')
+      cmd = "vcf2rdf convert --subject reference --config #{conf} #{input} | gzip > #{output}"
+      debug { cmd }
+
+      Open3.popen3(cmd) do |stdin, _stdout, stderr, wait_thr|
+        stdin.close
+        stderr.each { |line| puts line }
+        debug { "status: #{wait_thr.value}" }
+      end
+
+      puts " -> #{output}\n"
+    end
+  end
+end
+
+def check_load_config(*config)
+  config.each do |c|
+    dir = c.dig('load', 'directory')
+    raise "Missing required value: directory\n#{c.to_yaml}" if dir.blank?
+    raise "Not a directory: #{dir}" unless File.directory?(dir)
+
+    mask = c.dig('load', 'mask')
+    raise "Missing required value: mask\n#{c.to_yaml}" if mask.blank?
+
+    graph = c.dig('load', 'graph')
+    raise "Missing required value: graph\n#{c.to_yaml}" if graph.blank?
+    raise "Invalid value: #{graph}" unless URI.parse(graph).is_a? URI::HTTP
+  end
+end
+
+def virtuoso_drop(graph)
+  raise 'Failed to connect to virtuoso' unless Virtuoso.server_alive
+
+  ISQL.exec "log_enable(3,1); DELETE FROM rdf_quad WHERE g = iri_to_id ('#{graph}');"
+  ISQL.exec "DELETE FROM dba.load_list WHERE ll_graph = '#{graph}';"
+end
+
+def virtuoso_load(**options)
+  raise ArgumentError, 'Missing option: config' unless options[:config]
+
+  config = YAML.load_file(options[:config]).filter { |h| h.key?('load') }
+
+  check_load_config(*config)
+
+  raise 'Failed to connect to virtuoso' unless Virtuoso.server_alive
+
+  config.each do |c|
+    dir = c.dig('load', 'directory')
+    mask = c.dig('load', 'mask')
+    graph = c.dig('load', 'graph')
+
+    ISQL.exec "ld_dir('#{dir}', '#{mask}', '#{graph}');"
+  end
+
+  unless Virtuoso.count_remaining&.positive?
+    puts 'Nothing to load'
+    return
+  end
+
+  ISQL.exec "DB.DBA.RDF_OBJ_FT_RULE_DEL(null, null, 'ALL');"
+
+  puts "Load started at #{t1 = Time.now} (PARALLEL = #{PARALLEL})"
+  puts
+
+  threads = []
+  (1..PARALLEL).each do
+    threads << Thread.new { ISQL.exec 'rdf_loader_run(log_enable => 2);' }
+  end
+  threads.each(&:join)
+
+  puts "Load finished at #{t2 = Time.now} (#{readable_duration(t2 - t1)})"
+  puts
+
+  if Virtuoso.count_error&.positive?
+    puts 'Errors in these files:'
+    puts Virtuoso.list_error
+    puts
+  end
+
+  puts "Checkpoint started at #{t1 = Time.now}"
+  puts
+
+  ISQL.exec 'checkpoint;'
+
+  puts "Checkpoint finished at #{t2 = Time.now} (#{readable_duration(t2 - t1)})"
+  puts
+end
+
+def virtuoso_graph
+  raise 'Failed to connect to virtuoso' unless Virtuoso.server_alive
+
+  puts Virtuoso.graph
+end
+
+def virtuoso_list
+  raise 'Failed to connect to virtuoso' unless Virtuoso.server_alive
+
+  puts Virtuoso.list
+end
+
+def virtuoso_status
+  raise 'Failed to connect to virtuoso' unless Virtuoso.server_alive
+
+  puts "remaining: #{Virtuoso.count_remaining}"
+  puts "processing: #{Virtuoso.count_processing}"
+  puts "error: #{Virtuoso.count_error}"
+end
+
+def virtuoso_reset
+  raise 'Failed to connect to virtuoso' unless Virtuoso.server_alive
+
+  Virtuoso.reset_error
+
+  puts 'List of errors'
+  puts
+  puts Virtuoso.list_error
+end
+
+case ARGV[0]
+when 'convert'
+  rdf_convert(**options)
+when 'drop'
+  virtuoso_drop(ARGV[1])
+when 'graph'
+  virtuoso_graph
+when 'list'
+  virtuoso_list
+when 'load'
+  virtuoso_load(**options)
+when 'reset'
+  virtuoso_reset
+when 'status'
+  virtuoso_status
+else
+  raise ArgumentError, "Unknown command: #{ARGV[0]}"
+end
