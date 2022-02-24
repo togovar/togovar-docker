@@ -55,11 +55,11 @@
     },
     {
       "category": "Frequency",
-      "key": "ToMMo 4.7KJPN",
-      "label": "tommo_4.7kjpn",
+      "key": "ToMMo 8.3KJPN",
+      "label": "tommo",
       "type": "JBrowse/View/Track/Wiggle/XYPlot",
       "storeClass": "JBrowse/Store/BigWig",
-      "urlTemplate": "freq/tommo_4.7kjpn.bw",
+      "urlTemplate": "freq/tommo.bw",
       "metadata": {
         "Category": "Frequency"
       },
@@ -119,11 +119,27 @@
     },
     {
       "category": "Frequency",
-      "key": "ExAC",
-      "label": "exac",
+      "key": "gnomAD Genomes",
+      "label": "gnomad_genomes",
       "type": "JBrowse/View/Track/Wiggle/XYPlot",
       "storeClass": "JBrowse/Store/BigWig",
-      "urlTemplate": "freq/exac.bw",
+      "urlTemplate": "freq/gnomad_genomes.bw",
+      "metadata": {
+        "Category": "Frequency"
+      },
+      "min_score": 0,
+      "max_score": 7,
+      "style": {
+        "pos_color": "#94928d"
+      }
+    },
+    {
+      "category": "Frequency",
+      "key": "gnomAD Exomes",
+      "label": "gnomad_exomes",
+      "type": "JBrowse/View/Track/Wiggle/XYPlot",
+      "storeClass": "JBrowse/Store/BigWig",
+      "urlTemplate": "freq/gnomad_exomes.bw",
       "metadata": {
         "Category": "Frequency"
       },
