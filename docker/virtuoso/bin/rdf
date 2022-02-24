@@ -135,13 +135,14 @@ OptionParser.new do |opts|
   opts.on('-c', '--config=FILE', 'Path to configuration YAML') { |v| options[:config] = v }
   opts.separator ''
   opts.separator 'Commands:'
-  opts.separator '    add        Add RDF file to load list'
-  opts.separator '    add_all    Add RDF file to load list'
+  opts.separator '    add        Add RDF files to load list [required arguments: <dir> <mask> <graph>]'
   opts.separator '    convert    Convert VCF to RDF with vcf2rdf [required options: config]'
-  opts.separator '    load       Load RDF [required options: config]'
+  opts.separator '    drop       Drop a graph [required arguments: <graph>]'
+  opts.separator '    graph      List loaded graphs'
   opts.separator '    list       Print load list'
-  opts.separator '    status     Print load status'
+  opts.separator '    load       Execute RDF loader, add RDF to load list before loading if --config <FILE> is supplied [options: config]'
   opts.separator '    reset      Cancel load errors'
+  opts.separator '    status     Print load status'
 end.parse!
 
 def check_convert_config(*config)
@@ -201,6 +202,14 @@ def check_load_config(*config)
   end
 end
 
+def virtuoso_add_dir(dir, mask, graph)
+  raise ArgumentError, 'Missing required arguments.' if dir.nil? || dir.empty? || mask.nil? || mask.empty? || graph.nil? || graph.empty?
+
+  raise 'Failed to connect to virtuoso' unless Virtuoso.server_alive
+
+  ISQL.exec "ld_dir('#{dir}', '#{mask}', '#{graph}');"
+end
+
 def virtuoso_drop(graph)
   raise 'Failed to connect to virtuoso' unless Virtuoso.server_alive
 
@@ -209,20 +218,20 @@ def virtuoso_drop(graph)
 end
 
 def virtuoso_load(**options)
-  raise ArgumentError, 'Missing option: config' unless options[:config]
+  if options[:config]
+    config = YAML.load_file(options[:config]).filter { |h| h.key?('load') }
 
-  config = YAML.load_file(options[:config]).filter { |h| h.key?('load') }
+    check_load_config(*config)
 
-  check_load_config(*config)
+    raise 'Failed to connect to virtuoso' unless Virtuoso.server_alive
 
-  raise 'Failed to connect to virtuoso' unless Virtuoso.server_alive
+    config.each do |c|
+      dir = c.dig('load', 'directory')
+      mask = c.dig('load', 'mask')
+      graph = c.dig('load', 'graph')
 
-  config.each do |c|
-    dir = c.dig('load', 'directory')
-    mask = c.dig('load', 'mask')
-    graph = c.dig('load', 'graph')
-
-    ISQL.exec "ld_dir('#{dir}', '#{mask}', '#{graph}');"
+      ISQL.exec "ld_dir('#{dir}', '#{mask}', '#{graph}');"
+    end
   end
 
   unless Virtuoso.count_remaining&.positive?
@@ -290,6 +299,8 @@ def virtuoso_reset
 end
 
 case ARGV[0]
+when 'add'
+  virtuoso_add_dir(ARGV[1], ARGV[2], ARGV[3])
 when 'convert'
   rdf_convert(**options)
 when 'drop'
