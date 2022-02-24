@@ -28,21 +28,30 @@ for d in "${dirs[@]}"; do
   fi
 done
 
-if [[ ${#target[@]} = "0" ]]; then
-  echo "Nothing to do."
-  exit 1
+if [[ ${#target[@]} != "0" ]]; then
+  echo
+  read -rp "These directories will be created. Are you sure ? (y/N): " answer
+  case "$answer" in
+  [yY]*)
+    for d in "${target[@]}"; do
+      set -x
+      mkdir -p "$d"
+      { set +x; } 2>/dev/null
+    done
+    ;;
+  *)
+    echo "Abort."
+    ;;
+  esac
 fi
 
-echo
-read -rp "These directories will be created. Are you sure ? (y/N): " answer
-case "$answer" in
-[yY]*)
-  for d in "${target[@]}"; do
-    mkdir -p "$d"
-  done
-  ;;
-*)
-  echo "Abort."
-  exit 1
-  ;;
-esac
+for d in "${ELASTICSEARCH_VOLUMES_01_DATA:-./data/elasticsearch/01}" \
+  "${ELASTICSEARCH_VOLUMES_02_DATA:-./data/elasticsearch/02}" \
+  "${ELASTICSEARCH_VOLUMES_03_DATA:-./data/elasticsearch/03}" \
+  "${ELASTICSEARCH_VOLUMES_04_DATA:-./data/elasticsearch/04}" \
+  "${ELASTICSEARCH_VOLUMES_05_DATA:-./data/elasticsearch/05}" \
+  "${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}"; do
+  set -x
+  chmod 777 "$d"
+  { set +x; } 2>/dev/null
+done
