@@ -56,7 +56,7 @@ services:
       <<: *logging
 
   sparqlist:
-    image: ghcr.io/dbcls/sparqlist:snapshot-67162ef
+    image: ghcr.io/dbcls/sparqlist:snapshot-fffa8c9
     environment:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:-changeme}
       SPARQLIST_TOGOVAR_SPARQL: https://sparql-proxy/sparql
@@ -67,7 +67,7 @@ services:
       <<: *logging
 
   sparql-proxy:
-    image: dbcls/sparql-proxy:snapshot-a6eefc6
+    image: ghcr.io/dbcls/sparql-proxy:snapshot-e2af119
     environment:
       SPARQL_BACKEND: http://virtuoso:8890/sparql
       ADMIN_USER: admin
