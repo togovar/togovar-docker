@@ -14,8 +14,8 @@ services:
     image: ghcr.io/dbcls/sparqlist:snapshot-fffa8c9
     environment:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:-changeme}
-      SPARQLIST_TOGOVAR_SPARQL: https://sparql-proxy/sparql
-      SPARQLIST_TOGOVAR_SEARCH: https://app/search
+      SPARQLIST_TOGOVAR_SPARQL: http://sparql-proxy:3000/sparql
+      SPARQLIST_TOGOVAR_SEARCH: http://nginx/search
     volumes:
       - ./sparqlist:/app/repository
     ports:
