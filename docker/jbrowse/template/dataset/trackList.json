@@ -26,14 +26,14 @@
         "color": "function(r){var o=\"#67b6c9\";switch(r.data.so){case\"http://purl.obolibrary.org/obo/SO_0000316\":o=\"#8bba30\";break;case\"http://purl.obolibrary.org/obo/SO_0000253\":o=\"#ef6391\";break;case\"http://purl.obolibrary.org/obo/SO_0000252\":o=\"#e69023\"}return o};"
       },
       "urlTemplate": "https://togovar.biosciencedbc.jp/sparqlist/api/jbrowse_gene_track_grch37",
-      "queryTemplate": "{ref}:{start}:{end}@https://togovar.biosciencedbc.jp/sparql"
+      "queryTemplate": "{ref}:{start}:{end}"
     },
     {
-      "category": "Variation",
-      "key": "variation",
-      "label": "variation",
+      "category": "Variant",
+      "key": "variant",
+      "label": "variant",
       "storeClass": "JBrowse/Store/SeqFeature/VCFTabix",
-      "urlTemplate": "vcf/TogoVar.vcf.gz",
+      "urlTemplate": "vcf/togovar.vcf.gz",
       "type": "JBrowse/View/Track/HTMLVariants",
       "onClick": "function() { window.open('/variant/' + this.feature.get('name')); }"
     },
@@ -55,7 +55,7 @@
     },
     {
       "category": "Frequency",
-      "key": "ToMMo 8.3KJPN",
+      "key": "ToMMo",
       "label": "tommo",
       "type": "JBrowse/View/Track/Wiggle/XYPlot",
       "storeClass": "JBrowse/Store/BigWig",
