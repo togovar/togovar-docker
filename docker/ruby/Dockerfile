@@ -17,4 +17,4 @@ WORKDIR app
 VOLUME /app/node_modules /app/log /app/tmp
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["unicorn", "-c", "config/unicorn.rb"]
+CMD ["bundle", "exec", "unicorn", "-c", "config/unicorn.rb"]
