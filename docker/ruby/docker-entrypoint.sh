@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ $1 == "unicorn" ]]; then
+if [[ $1 == "start" ]]; then
   bundle install
   yarn install
 
@@ -13,6 +13,8 @@ if [[ $1 == "unicorn" ]]; then
 
   echo
   echo "start unicorn..."
-fi
 
-exec "$@"
+  bundle exec unicorn -c config/unicorn.rb
+else
+  exec "$@"
+fi
