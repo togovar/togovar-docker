@@ -13,6 +13,7 @@ services:
     depends_on:
       - app
       - jbrowse
+      - stanza
       - sparqlist
       - sparql-proxy
     logging: &logging
@@ -44,6 +45,14 @@ services:
       - app_tmp:/app/tmp
       - app_sockets:/app/tmp/sockets
       - app_www:/var/www
+    logging:
+      <<: *logging
+
+  # TODO remove submodule
+  stanza:
+    image: togovar_stanza:2021.1
+    volumes:
+      - ./stanza:/stanza
     logging:
       <<: *logging
 
