@@ -16,6 +16,7 @@ services:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:-changeme}
       SPARQLIST_TOGOVAR_SPARQL: http://sparql-proxy:3000/sparql
       SPARQLIST_TOGOVAR_SEARCH: http://nginx/search
+      SPARQLIST_TOGOVAR_SPARQLIST: http://sparqlist:3000/sparqlist
     volumes:
       - ./sparqlist:/app/repository
     ports:

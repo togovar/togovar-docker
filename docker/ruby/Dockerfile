@@ -8,8 +8,6 @@ RUN apt --allow-releaseinfo-change update && \
       nodejs && \
     rm -rf /var/lib/apt/lists/*
 
-RUN npm install --global yarn
-
 COPY docker-entrypoint.sh /usr/local/bin/
 
 WORKDIR app

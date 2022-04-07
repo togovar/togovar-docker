@@ -1,4 +1,11 @@
-version: '3'
+version: '3.7'
+
+x-logging:
+  &default-logging
+  driver: "json-file"
+  options:
+    max-size: "1m"
+    max-file: "1"
 
 services:
   nginx:
@@ -13,14 +20,9 @@ services:
     depends_on:
       - app
       - jbrowse
-      - stanza
       - sparqlist
       - sparql-proxy
-    logging: &logging
-      driver: "json-file"
-      options:
-        max-size: "1m"
-        max-file: "1"
+    logging: *default-logging
 
   app:
     build: docker/ruby
@@ -45,16 +47,7 @@ services:
       - app_tmp:/app/tmp
       - app_sockets:/app/tmp/sockets
       - app_www:/var/www
-    logging:
-      <<: *logging
-
-  # TODO remove submodule
-  stanza:
-    image: togovar_stanza:2021.1
-    volumes:
-      - ./stanza:/stanza
-    logging:
-      <<: *logging
+    logging: *default-logging
 
   jbrowse:
     build: docker/jbrowse
@@ -62,8 +55,7 @@ services:
     volumes:
       - ./docker/jbrowse/template/jbrowse_conf.json:/var/www/jbrowse_conf.json:ro
       - ${JBROWSE_VOLUMES_DATA:-./data/jbrowse/data}:/var/www/data
-    logging:
-      <<: *logging
+    logging: *default-logging
 
   sparqlist:
     image: ghcr.io/dbcls/sparqlist:snapshot-fffa8c9
@@ -71,10 +63,10 @@ services:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:-changeme}
       SPARQLIST_TOGOVAR_SPARQL: http://sparql-proxy:3000/sparql
       SPARQLIST_TOGOVAR_SEARCH: http://nginx/search
+      SPARQLIST_TOGOVAR_SPARQLIST: http://sparqlist:3000/sparqlist
     volumes:
       - ./sparqlist:/app/repository
-    logging:
-      <<: *logging
+    logging: *default-logging
 
   sparql-proxy:
     image: ghcr.io/dbcls/sparql-proxy:snapshot-e2af119
@@ -88,8 +80,7 @@ services:
     depends_on:
       - virtuoso
       - redis
-    logging:
-      <<: *logging
+    logging: *default-logging
 
   virtuoso:
     build: docker/virtuoso
@@ -129,13 +120,11 @@ services:
       - ${VIRTUOSO_VOLUMES_LOAD:-./data/virtuoso/load}:/load
       - ${VIRTUOSO_VOLUMES_DATABASE:-./data/virtuoso/database}:/database
       - ${VIRTUOSO_VOLUMES_SETTINGS:-./data/virtuoso/settings}:/settings
-    logging:
-      <<: *logging
+    logging: *default-logging
 
   redis:
     image: redis:6
-    logging:
-      <<: *logging
+    logging: *default-logging
 
   elasticsearch01: &es
     image: elasticsearch:7.16.3
@@ -160,8 +149,7 @@ services:
     volumes:
       - ${ELASTICSEARCH_VOLUMES_01_DATA:-./data/elasticsearch/01}:/usr/share/elasticsearch/data
       - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
-    logging:
-      <<: *logging
+    logging: *default-logging
 
   elasticsearch02:
     <<: *es

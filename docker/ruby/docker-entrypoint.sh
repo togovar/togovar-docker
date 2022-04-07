@@ -2,9 +2,9 @@
 
 if [[ $1 == "start" ]]; then
   bundle install
-  yarn install
+  npm install
 
-  yarn build
+  npm run build
 
   cp -rv /app/dist/* /var/www/
 
