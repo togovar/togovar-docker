@@ -4,6 +4,3 @@
 [submodule "sparqlist"]
 	path = sparqlist
 	url = https://github.com/togovar/sparqlist.git
-[submodule "stanza"]
-	path = stanza
-	url = https://github.com/togovar/stanza.git
