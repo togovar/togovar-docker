@@ -44,8 +44,9 @@ services:
       - app_bundle:/usr/local/bundle
       - app_log:/app/log
       - app_node_modules:/app/node_modules
-      - app_tmp:/app/tmp
       - app_sockets:/app/tmp/sockets
+      - app_stanza_node_modules:/app/stanza/node_modules
+      - app_tmp:/app/tmp
       - app_www:/var/www
     logging: *default-logging
 
@@ -208,5 +209,6 @@ volumes:
   app_log:
   app_node_modules:
   app_sockets:
+  app_stanza_node_modules:
   app_tmp:
   app_www:
