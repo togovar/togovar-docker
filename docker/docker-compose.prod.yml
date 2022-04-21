@@ -40,13 +40,14 @@ services:
       TOGOVAR_ENDPOINT_STANZA: ${TOGOVAR_ENDPOINT_STANZA:-https://togovar.biosciencedbc.jp/stanza}
       TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.biosciencedbc.jp}
     volumes:
-      - ./app:/app
+      - ./app:/opt/togovar/app
+      - ./.git:/opt/togovar/.git
       - app_bundle:/usr/local/bundle
-      - app_log:/app/log
-      - app_node_modules:/app/node_modules
-      - app_sockets:/app/tmp/sockets
-      - app_stanza_node_modules:/app/stanza/node_modules
-      - app_tmp:/app/tmp
+      - app_log:/opt/togovar/app/log
+      - app_node_modules:/opt/togovar/app/node_modules
+      - app_sockets:/opt/togovar/app/tmp/sockets
+      - app_stanza_node_modules:/opt/togovar/app/stanza/node_modules
+      - app_tmp:/opt/togovar/app/tmp
       - app_www:/var/www
     logging: *default-logging
 

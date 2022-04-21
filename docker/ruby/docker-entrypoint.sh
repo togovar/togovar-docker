@@ -6,20 +6,20 @@ if [[ $1 == "start" ]]; then
 
   echo "build frontend" >&2
   npm run build:prod
-  cp -rv /app/dist/* /var/www/
+  cp -rv /opt/togovar/app/dist/* /var/www/
 
   if [[ -d stanza ]]; then
     echo
     echo "build stanza" >&2
 
-    cd stanza
+    cd /opt/togovar/app/stanza
     npm install
-    npm run build --output-path /var/www/stanza
+    npx togostanza build --output-path /var/www/stanza
     cd -
   fi
 
-  mkdir -p /app/tmp/pids && rm -f /app/tmp/pids/*
-  mkdir -p /app/tmp/sockets && rm -f /app/tmp/sockets/*
+  mkdir -p /opt/togovar/app/tmp/pids && rm -f /opt/togovar/app/tmp/pids/*
+  mkdir -p /opt/togovar/app/tmp/sockets && rm -f /opt/togovar/app/tmp/sockets/*
 
   echo
   echo "start unicorn..."

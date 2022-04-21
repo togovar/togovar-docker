@@ -12,9 +12,7 @@ RUN npm update -g npm
 
 COPY docker-entrypoint.sh /usr/local/bin/
 
-WORKDIR app
-
-VOLUME /app/node_modules /app/log /app/tmp
+WORKDIR /opt/togovar/app
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["start"]
