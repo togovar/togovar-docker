@@ -8,7 +8,7 @@ if [[ $1 == "start" ]]; then
   npm run build:prod
   cp -rv /opt/togovar/app/dist/* /var/www/
 
-  if [[ -d stanza ]]; then
+  if [[ -d /opt/togovar/app/stanza ]]; then
     echo
     echo "build stanza" >&2
 
