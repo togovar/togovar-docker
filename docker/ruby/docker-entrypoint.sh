@@ -16,7 +16,7 @@ if [[ $1 == "start" ]]; then
     echo >&2
     echo "build stanza" >&2
     npx togostanza build --output-path /tmp/stanza
-    cp -rv /tmp/stanza /var/www/stanza
+    cp -rv /tmp/stanza /var/www/
     cd -
   fi
 
