@@ -80,6 +80,7 @@ services:
       CACHE_STORE: redis
       REDIS_URL: redis://redis:6379
       MAX_CONCURRENCY: 50
+      MAX_LIMIT: 1000000
     depends_on:
       - virtuoso
       - redis
