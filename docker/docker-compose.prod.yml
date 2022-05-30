@@ -71,7 +71,8 @@ services:
     logging: *default-logging
 
   sparql-proxy:
-    image: ghcr.io/dbcls/sparql-proxy:snapshot-e2af119
+    build: docker/proxy
+    image: togovar_proxy:${VERSION:-latest}
     environment:
       SPARQL_BACKEND: http://virtuoso:8890/sparql
       ADMIN_USER: admin
