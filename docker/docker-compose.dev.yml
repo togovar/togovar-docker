@@ -31,6 +31,7 @@ services:
       CACHE_STORE: redis
       REDIS_URL: redis://redis:6379
       MAX_CONCURRENCY: 50
+      PASSTHROUGH: "true"
     depends_on:
       - virtuoso
       - redis
