@@ -60,7 +60,7 @@ services:
     logging: *default-logging
 
   sparqlist:
-    image: ghcr.io/dbcls/sparqlist:snapshot-fffa8c9
+    image: ghcr.io/dbcls/sparqlist:latest
     environment:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:-changeme}
       SPARQLIST_TOGOVAR_API: http://nginx/api

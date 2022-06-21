@@ -11,7 +11,7 @@ services:
       - "${JBROWSE_PORT:-8080}:8080"
 
   sparqlist:
-    image: ghcr.io/dbcls/sparqlist:snapshot-fffa8c9
+    image: ghcr.io/dbcls/sparqlist:latest
     environment:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:-changeme}
       SPARQLIST_TOGOVAR_API: http://nginx/api
@@ -24,7 +24,7 @@ services:
       - "${SPARQLIST_PORT:-8081}:3000"
 
   sparql-proxy:
-    image: ghcr.io/dbcls/sparql-proxy:snapshot-e2af119
+    image: ghcr.io/dbcls/sparql-proxy:latest
     environment:
       SPARQL_BACKEND: http://virtuoso:8890/sparql
       ADMIN_USER: admin
