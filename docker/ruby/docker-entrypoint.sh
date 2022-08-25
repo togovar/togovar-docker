@@ -9,20 +9,10 @@ if [[ $1 == "start" ]]; then
   npm install
   chown ${orig} /opt/togovar/app
 
-  if [[ -d /opt/togovar/app/stanza ]]; then
-    cd /opt/togovar/app/stanza
-    npm install
-
-    echo >&2
-    echo "build stanza" >&2
-    npx togostanza build --output-path /tmp/stanza
-    cp -rv /tmp/stanza /var/www/
-    cd -
-  fi
-
   echo >&2
   echo "build frontend" >&2
-  npm run build:prod
+
+  npm run build
   cp -rv /opt/togovar/app/dist/* /var/www/
 
   mkdir -p /opt/togovar/app/tmp/pids && rm -f /opt/togovar/app/tmp/pids/*
