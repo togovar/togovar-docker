@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 
 services:
   jbrowse:
@@ -24,7 +24,8 @@ services:
       - "${SPARQLIST_PORT:-8081}:3000"
 
   sparql-proxy:
-    image: ghcr.io/dbcls/sparql-proxy:latest
+    build: docker/proxy
+    image: togovar_proxy:${VERSION:-latest}
     environment:
       SPARQL_BACKEND: http://virtuoso:8890/sparql
       ADMIN_USER: admin
@@ -47,7 +48,7 @@ services:
       SPARQL_UPDATE: "false"
       DEFAULT_GRAPH: http://togovar.biosciencedbc.jp
       VIRT_Parameters_DirsAllowed: /load
-      VIRT_SPARQL_MaxQueryCostEstimationTime: 6000
+      VIRT_SPARQL_MaxQueryCostEstimationTime: 10000
       VIRT_SPARQL_MaxQueryExecutionTime: 600
       VIRT_SPARQL_ResultSetMaxRows: 1000000
       VIRT_URIQA_DefaultHost: togovar.biosciencedbc.jp
