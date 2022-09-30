@@ -76,9 +76,9 @@ services:
     volumes:
       - ./docker/virtuoso/bin/rdf:/usr/local/bin/rdf:ro
       - ./docker/virtuoso/config:/config:ro
-      - ${VIRTUOSO_VOLUMES_LOAD:-./data/virtuoso/load}:/load
+      - ${PUBLIC_DIR:-./data/virtuoso/public}:/mnt/public
+      - ${VIRTUOSO_VOLUMES_RDF:-./data/virtuoso/rdf}:/mnt/rdf
       - ${VIRTUOSO_VOLUMES_DATABASE:-./data/virtuoso/database}:/database
-      - ${VIRTUOSO_VOLUMES_SETTINGS:-./data/virtuoso/settings}:/settings
     ports:
       - "${VIRTUOSO_PORT:-8890}:8890"
 

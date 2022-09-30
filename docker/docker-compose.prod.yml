@@ -121,10 +121,7 @@ services:
       VIRT_Parameters_NumberOfBuffers: 5450000
       VIRT_Parameters_MaxDirtyBuffers: 4000000
     volumes:
-      - ./docker/virtuoso/config:/config:ro
-      - ${VIRTUOSO_VOLUMES_LOAD:-./data/virtuoso/load}:/load
       - ${VIRTUOSO_VOLUMES_DATABASE:-./data/virtuoso/database}:/database
-      - ${VIRTUOSO_VOLUMES_SETTINGS:-./data/virtuoso/settings}:/settings
     logging: *default-logging
 
   redis:
