@@ -39,6 +39,7 @@ services:
       TOGOVAR_ENDPOINT_JBROWSE: ${TOGOVAR_ENDPOINT_JBROWSE:-https://togovar.biosciencedbc.jp/jbrowse}
       TOGOVAR_ENDPOINT_STANZA: ${TOGOVAR_ENDPOINT_STANZA:-https://togovar.biosciencedbc.jp/stanza}
       TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.biosciencedbc.jp}
+      TOGOVAR_FRONTEND_REFERENCE: ${TOGOVAR_FRONTEND_REFERENCE:-GRCh38}
     volumes:
       - ./app:/opt/togovar/app
       - ./.git:/opt/togovar/.git
