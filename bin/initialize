@@ -10,7 +10,6 @@ dirs=(
   "${JBROWSE_VOLUMES_DATA:-./data/jbrowse/data}"
   "${VIRTUOSO_VOLUMES_LOAD:-./data/virtuoso/load}"
   "${VIRTUOSO_VOLUMES_DATABASE:-./data/virtuoso/database}"
-  "${VIRTUOSO_VOLUMES_SETTINGS:-./data/virtuoso/settings}"
   "${ELASTICSEARCH_VOLUMES_01_DATA:-./data/elasticsearch/01}"
   "${ELASTICSEARCH_VOLUMES_02_DATA:-./data/elasticsearch/02}"
   "${ELASTICSEARCH_VOLUMES_03_DATA:-./data/elasticsearch/03}"
@@ -45,7 +44,8 @@ if [[ ${#target[@]} != "0" ]]; then
   esac
 fi
 
-for d in "${ELASTICSEARCH_VOLUMES_01_DATA:-./data/elasticsearch/01}" \
+for d in \
+  "${ELASTICSEARCH_VOLUMES_01_DATA:-./data/elasticsearch/01}" \
   "${ELASTICSEARCH_VOLUMES_02_DATA:-./data/elasticsearch/02}" \
   "${ELASTICSEARCH_VOLUMES_03_DATA:-./data/elasticsearch/03}" \
   "${ELASTICSEARCH_VOLUMES_04_DATA:-./data/elasticsearch/04}" \
