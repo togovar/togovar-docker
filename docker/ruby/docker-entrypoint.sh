@@ -6,12 +6,12 @@ if [[ $1 == "start" ]]; then
   # workaround for https://github.com/npm/cli/issues/624
   orig=$(stat -c '%u' /opt/togovar/app)
   chown root /opt/togovar/app
-  npm install --legacy-peer-deps
+  npm ci --legacy-peer-deps
   chown ${orig} /opt/togovar/app
 
   if [[ -d /opt/togovar/app/stanza ]]; then
     cd /opt/togovar/app/stanza
-    npm install --legacy-peer-deps
+    npm ci --legacy-peer-deps
 
     echo >&2
     echo "build stanza" >&2
