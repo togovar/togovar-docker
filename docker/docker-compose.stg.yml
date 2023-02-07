@@ -1,0 +1,236 @@
+version: '3.7'
+
+x-logging:
+  &default-logging
+  driver: "json-file"
+  options:
+    max-size: "1m"
+    max-file: "1"
+
+services:
+  nginx:
+    image: nginx:1.21
+    volumes:
+      - ${PUBLIC_DIR:-/var/www/togovar/public}:/var/www/public:ro
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - app_sockets:/tmp/sockets:ro
+      - app_www:/var/www
+    ports:
+      - ${NGINX_PORT:-80}:80
+    depends_on:
+      - app
+      - jbrowse
+      - sparqlist
+      - sparql-proxy
+    logging: *default-logging
+
+  app:
+    build: docker/ruby
+    image: togovar_app:${VERSION:-latest}
+    environment:
+      NODE_ENV: production
+      RAILS_ENV: production
+      WEB_CONCURRENCY: 10
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-changeme}
+      TOGOVAR_ELASTICSEARCH_HOST: elasticsearch01:9200
+      TOGOVAR_ENDPOINT_SPARQL: ${TOGOVAR_ENDPOINT_SPARQL:-https://togovar.biosciencedbc.jp/sparql}
+      TOGOVAR_ENDPOINT_SPARQLIST: ${TOGOVAR_ENDPOINT_SPARQLIST:-https://togovar.biosciencedbc.jp/sparqlist}
+      TOGOVAR_ENDPOINT_SEARCH: ${TOGOVAR_ENDPOINT_SEARCH:-https://togovar.biosciencedbc.jp/search}
+      TOGOVAR_ENDPOINT_JBROWSE: ${TOGOVAR_ENDPOINT_JBROWSE:-https://togovar.biosciencedbc.jp/jbrowse}
+      TOGOVAR_ENDPOINT_STANZA: ${TOGOVAR_ENDPOINT_STANZA:-https://togovar.biosciencedbc.jp/stanza}
+      TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.biosciencedbc.jp}
+      TOGOVAR_FRONTEND_REFERENCE: ${TOGOVAR_FRONTEND_REFERENCE:-GRCh38}
+    volumes:
+      - ./app:/opt/togovar/app
+      - ./.git:/opt/togovar/.git
+      - app_bundle:/usr/local/bundle
+      - app_log:/opt/togovar/app/log
+      - app_node_modules:/opt/togovar/app/node_modules
+      - app_sockets:/opt/togovar/app/tmp/sockets
+      - app_stanza_node_modules:/opt/togovar/app/stanza/node_modules
+      - app_tmp:/opt/togovar/app/tmp
+      - app_www:/var/www
+    logging: *default-logging
+
+  jbrowse:
+    build: docker/jbrowse
+    image: togovar_jbrowse:${VERSION:-latest}
+    volumes:
+      - ./docker/jbrowse/template/jbrowse_conf.json:/var/www/jbrowse_conf.json:ro
+      - ${JBROWSE_VOLUMES_DATA:-./data/jbrowse/data}:/var/www/data
+    logging: *default-logging
+    ports:
+      - "${JBROWSE_PORT:-8080}:8080"
+
+  sparqlist:
+    image: ghcr.io/dbcls/sparqlist:latest
+    environment:
+      ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:-changeme}
+      SPARQLIST_TOGOVAR_API: http://nginx/api
+      SPARQLIST_TOGOVAR_SPARQL: http://sparql-proxy:3000/proxy/sparql
+      SPARQLIST_TOGOVAR_SEARCH: http://nginx/search
+      SPARQLIST_TOGOVAR_SPARQLIST: http://sparqlist:3000/sparqlist
+    volumes:
+      - ./sparqlist:/app/repository
+    logging: *default-logging
+    ports:
+      - "${SPARQLIST_PORT:-8081}:3000"
+
+  sparql-proxy:
+    build: docker/proxy
+    image: togovar_proxy:${VERSION:-latest}
+    environment:
+      SPARQL_BACKEND: http://virtuoso:8890/sparql
+      ADMIN_USER: admin
+      ADMIN_PASSWORD: ${SPARQL_PROXY_ADMIN_PASSWORD:-changeme}
+      CACHE_STORE: redis
+      REDIS_URL: redis://redis:6379
+      MAX_CONCURRENCY: 50
+      PASSTHROUGH: "true"
+    depends_on:
+      - virtuoso
+      - redis
+    logging: *default-logging
+    ports:
+      - "${SPARQL_PROXY_PORT:-8082}:3000"
+
+  virtuoso:
+    build: docker/virtuoso
+    image: togovar_virtuoso:${VERSION:-latest}
+    environment:
+      DBA_PASSWORD: dba
+      SPARQL_UPDATE: "false"
+      DEFAULT_GRAPH: http://togovar.biosciencedbc.jp
+      VIRT_Parameters_DirsAllowed: /
+      VIRT_SPARQL_MaxQueryCostEstimationTime: 10000
+      VIRT_SPARQL_MaxQueryExecutionTime: 600
+      VIRT_SPARQL_ResultSetMaxRows: 1000000
+      VIRT_URIQA_DefaultHost: togovar.biosciencedbc.jp
+      ## Uncomment next two lines if there is 2 GB system memory free
+      #VIRT_Parameters_NumberOfBuffers: 170000
+      #VIRT_Parameters_MaxDirtyBuffers: 130000
+      ## Uncomment next two lines if there is 4 GB system memory free
+      #VIRT_Parameters_NumberOfBuffers: 340000
+      #VIRT_Parameters_MaxDirtyBuffers: 250000
+      ## Uncomment next two lines if there is 8 GB system memory free
+      #VIRT_Parameters_NumberOfBuffers: 680000
+      #VIRT_Parameters_MaxDirtyBuffers: 500000
+      ## Uncomment next two lines if there is 16 GB system memory free
+      #VIRT_Parameters_NumberOfBuffers: 1360000
+      #VIRT_Parameters_MaxDirtyBuffers: 1000000
+      ## Uncomment next two lines if there is 32 GB system memory free
+      #VIRT_Parameters_NumberOfBuffers: 2720000
+      #VIRT_Parameters_MaxDirtyBuffers: 2000000
+      ## Uncomment next two lines if there is 48 GB system memory free
+      #VIRT_Parameters_NumberOfBuffers: 4000000
+      #VIRT_Parameters_MaxDirtyBuffers: 3000000
+      ## Uncomment next two lines if there is 64 GB system memory free
+      VIRT_Parameters_NumberOfBuffers: 5450000
+      VIRT_Parameters_MaxDirtyBuffers: 4000000
+    volumes:
+      - ${VIRTUOSO_VOLUMES_DATABASE:-./data/virtuoso/database}:/database
+    logging: *default-logging
+    ports:
+      - "${VIRTUOSO_PORT:-8890}:8890"
+
+  redis:
+    image: redis:6
+    logging: *default-logging
+
+  elasticsearch01: &es
+    image: elasticsearch:7.16.3
+    #ulimits: # failed to set ulimits on rootless
+    #  memlock:
+    #    soft: -1
+    #    hard: -1
+    environment: &es_env
+      discovery.seed_hosts: elasticsearch02,elasticsearch03,elasticsearch04,elasticsearch05
+      node.name: node01
+      cluster.initial_master_nodes: node01,node02,node03,node04,node05
+      ES_JAVA_OPTS: -Xms16g -Xmx16g
+      bootstrap.memory_lock: "true"
+      xpack.monitoring.collection.enabled: "true"
+      xpack.security.enabled: "false"
+      path.repo: /usr/share/elasticsearch/snapshot
+    depends_on:
+      - elasticsearch02
+      - elasticsearch03
+      - elasticsearch04
+      - elasticsearch05
+    volumes:
+      - ${ELASTICSEARCH_VOLUMES_01_DATA:-./data/elasticsearch/01}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
+    logging: *default-logging
+    ports:
+      - "${ELASTICSEARCH_PORT:-9200}:9200"
+
+  elasticsearch02:
+    <<: *es
+    environment:
+      <<: *es_env
+      node.name: node02
+      discovery.seed_hosts: elasticsearch01,elasticsearch03,elasticsearch04,elasticsearch05
+      cluster.initial_master_nodes: node01,node02,node03,node04,node05
+    volumes:
+      - ${ELASTICSEARCH_VOLUMES_02_DATA:-./data/elasticsearch/02}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
+    depends_on: []
+    ports: []
+
+  elasticsearch03:
+    <<: *es
+    environment:
+      <<: *es_env
+      node.name: node03
+      discovery.seed_hosts: elasticsearch01,elasticsearch02,elasticsearch04,elasticsearch05
+      cluster.initial_master_nodes: node01,node02,node03,node04,node05
+    volumes:
+      - ${ELASTICSEARCH_VOLUMES_03_DATA:-./data/elasticsearch/03}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
+    depends_on: []
+    ports: []
+
+  elasticsearch04:
+    <<: *es
+    environment:
+      <<: *es_env
+      node.name: node04
+      discovery.seed_hosts: elasticsearch01,elasticsearch02,elasticsearch03,elasticsearch05
+      cluster.initial_master_nodes: node01,node02,node03,node04,node05
+    volumes:
+      - ${ELASTICSEARCH_VOLUMES_04_DATA:-./data/elasticsearch/04}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
+    depends_on: []
+    ports: []
+
+  elasticsearch05:
+    <<: *es
+    environment:
+      <<: *es_env
+      node.name: node05
+      discovery.seed_hosts: elasticsearch01,elasticsearch02,elasticsearch03,elasticsearch04
+      cluster.initial_master_nodes: node01,node02,node03,node04,node05
+    volumes:
+      - ${ELASTICSEARCH_VOLUMES_05_DATA:-./data/elasticsearch/05}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
+    depends_on: []
+    ports: []
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.16.3
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch01:9200
+      I18N_LOCALE: ja-JP
+    depends_on:
+      - elasticsearch01
+    ports:
+      - "${KIBANA_PORT:-5601}:5601"
+
+volumes:
+  app_bundle:
+  app_log:
+  app_node_modules:
+  app_sockets:
+  app_stanza_node_modules:
+  app_tmp:
+  app_www:
