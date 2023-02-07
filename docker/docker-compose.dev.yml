@@ -75,7 +75,6 @@ services:
       VIRT_Parameters_MaxDirtyBuffers: 4000000
     volumes:
       - ./docker/virtuoso/bin/rdf:/usr/local/bin/rdf:ro
-      - ./docker/virtuoso/config:/config:ro
       - ${PUBLIC_DIR:-./data/virtuoso/public}:/mnt/public
       - ${VIRTUOSO_VOLUMES_RDF:-./data/virtuoso/rdf}:/mnt/rdf
       - ${VIRTUOSO_VOLUMES_DATABASE:-./data/virtuoso/database}:/database
