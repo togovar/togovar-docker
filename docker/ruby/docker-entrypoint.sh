@@ -22,7 +22,7 @@ if [[ $1 == "start" ]]; then
 
   echo >&2
   echo "build frontend" >&2
-  npm run build:prod
+  npm run build
   cp -rv /opt/togovar/app/dist/* /var/www/
 
   mkdir -p /opt/togovar/app/tmp/pids && rm -f /opt/togovar/app/tmp/pids/*
