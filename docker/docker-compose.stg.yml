@@ -33,12 +33,12 @@ services:
       WEB_CONCURRENCY: 10
       SECRET_KEY_BASE: ${SECRET_KEY_BASE:-changeme}
       TOGOVAR_ELASTICSEARCH_HOST: elasticsearch01:9200
-      TOGOVAR_ENDPOINT_SPARQL: ${TOGOVAR_ENDPOINT_SPARQL:-https://togovar.biosciencedbc.jp/sparql}
-      TOGOVAR_ENDPOINT_SPARQLIST: ${TOGOVAR_ENDPOINT_SPARQLIST:-https://togovar.biosciencedbc.jp/sparqlist}
-      TOGOVAR_ENDPOINT_SEARCH: ${TOGOVAR_ENDPOINT_SEARCH:-https://togovar.biosciencedbc.jp/search}
-      TOGOVAR_ENDPOINT_JBROWSE: ${TOGOVAR_ENDPOINT_JBROWSE:-https://togovar.biosciencedbc.jp/jbrowse}
-      TOGOVAR_ENDPOINT_STANZA: ${TOGOVAR_ENDPOINT_STANZA:-https://togovar.biosciencedbc.jp/stanza}
-      TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.biosciencedbc.jp}
+      TOGOVAR_ENDPOINT_SPARQL: ${TOGOVAR_ENDPOINT_SPARQL:-https://togovar.org/sparql}
+      TOGOVAR_ENDPOINT_SPARQLIST: ${TOGOVAR_ENDPOINT_SPARQLIST:-https://togovar.org/sparqlist}
+      TOGOVAR_ENDPOINT_SEARCH: ${TOGOVAR_ENDPOINT_SEARCH:-https://togovar.org/search}
+      TOGOVAR_ENDPOINT_JBROWSE: ${TOGOVAR_ENDPOINT_JBROWSE:-https://togovar.org/jbrowse}
+      TOGOVAR_ENDPOINT_STANZA: ${TOGOVAR_ENDPOINT_STANZA:-https://togovar.org/stanza}
+      TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.org}
       TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:-GRCh38}
     volumes:
       - ./app:/opt/togovar/app
@@ -100,7 +100,7 @@ services:
     environment:
       DBA_PASSWORD: dba
       SPARQL_UPDATE: "false"
-      DEFAULT_GRAPH: http://togovar.biosciencedbc.jp
+      DEFAULT_GRAPH: http://togovar.org
       VIRT_Parameters_DirsAllowed: /
       VIRT_SPARQL_MaxQueryCostEstimationTime: 10000
       VIRT_SPARQL_MaxQueryExecutionTime: 600
