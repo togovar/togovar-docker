@@ -1,10 +1,9 @@
-FROM ruby:2.7.1-buster
+FROM ruby:3.2
 
-RUN curl -sL "https://deb.nodesource.com/setup_14.x" | bash -
+RUN curl -sL "https://deb.nodesource.com/setup_18.x" | bash -
 
-RUN apt --allow-releaseinfo-change update && \
+RUN apt update && \
     apt install -y --no-install-recommends \
-      ca-certificates \
       nodejs && \
     rm -rf /var/lib/apt/lists/*
 

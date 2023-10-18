@@ -120,7 +120,7 @@ module Virtuoso
   end
 
   def list_error
-    Virtuoso.select 'll_file, ll_graph', 'll_error IS NOT NULL'
+    Virtuoso.select 'll_file, ll_graph, ll_error', 'll_error IS NOT NULL'
   end
 
   def reset_error
@@ -128,86 +128,8 @@ module Virtuoso
   end
 end
 
-# main
-
-options = {}
-
-OptionParser.new do |opts|
-  opts.banner = "Usage: #{$PROGRAM_NAME} [options] command"
-  opts.separator ''
-  opts.separator 'Options:'
-  opts.on('-c', '--config=FILE', 'Path to configuration YAML') { |v| options[:config] = v }
-  opts.separator ''
-  opts.separator 'Commands:'
-  opts.separator '    add        Add RDF files to load list [required arguments: <dir> <mask> <graph>]'
-  opts.separator '    convert    Convert VCF to RDF with vcf2rdf [required options: config]'
-  opts.separator '    drop       Drop a graph [required arguments: <graph>]'
-  opts.separator '    graph      List loaded graphs'
-  opts.separator '    list       Print load list'
-  opts.separator '    load       Execute RDF loader, add RDF to load list before loading if --config <FILE> is supplied [options: config]'
-  opts.separator '    reset      Cancel load errors'
-  opts.separator '    status     Print load status'
-end.parse!
-
-def check_convert_config(*config)
-  config.each do |c|
-    dir = c.dig('convert', 'directory')
-    raise "Missing required value: directory\n#{c.to_yaml}" if dir.blank?
-    raise "Not a directory: #{dir}" unless File.directory?(dir)
-
-    conf = c.dig('convert', 'config')
-    raise "Missing required value: config\n#{c.to_yaml}" if conf.blank?
-    raise "File not found: #{conf}" unless File.exist?(conf)
-  end
-end
-
-def rdf_convert(**options)
-  raise ArgumentError, 'Missing option: config' unless options[:config]
-
-  config = YAML.load_file(options[:config]).filter { |h| h.key?('convert') }
-
-  # configuration check
-  check_convert_config(*config)
-
-  config.each do |c|
-    dir = c.dig('convert', 'directory')
-    conf = c.dig('convert', 'config')
-
-    Dir.glob(File.join(dir, '*.vcf.gz')) do |input|
-      puts "converting #{input}"
-
-      output = input.sub(/\.vcf\.b?gz$/, '.ttl.gz')
-      cmd = "vcf2rdf convert --subject reference --config #{conf} #{input} | gzip > #{output}"
-      debug { cmd }
-
-      Open3.popen3(cmd) do |stdin, _stdout, stderr, wait_thr|
-        stdin.close
-        stderr.each { |line| puts line }
-        debug { "status: #{wait_thr.value}" }
-      end
-
-      puts " -> #{output}\n"
-    end
-  end
-end
-
-def check_load_config(*config)
-  config.each do |c|
-    dir = c.dig('load', 'directory')
-    raise "Missing required value: directory\n#{c.to_yaml}" if dir.blank?
-    raise "Not a directory: #{dir}" unless File.directory?(dir)
-
-    mask = c.dig('load', 'mask')
-    raise "Missing required value: mask\n#{c.to_yaml}" if mask.blank?
-
-    graph = c.dig('load', 'graph')
-    raise "Missing required value: graph\n#{c.to_yaml}" if graph.blank?
-    raise "Invalid value: #{graph}" unless URI.parse(graph).is_a? URI::HTTP
-  end
-end
-
 def virtuoso_add_dir(dir, mask, graph)
-  raise ArgumentError, 'Missing required arguments.' if dir.nil? || dir.empty? || mask.nil? || mask.empty? || graph.nil? || graph.empty?
+  raise ArgumentError, 'Missing required arguments.' if dir.blank? || mask.blank? || graph.blank?
 
   raise 'Failed to connect to virtuoso' unless Virtuoso.server_alive
 
@@ -221,23 +143,7 @@ def virtuoso_drop(graph)
   ISQL.exec "DELETE FROM dba.load_list WHERE ll_graph = '#{graph}';"
 end
 
-def virtuoso_load(**options)
-  if options[:config]
-    config = YAML.load_file(options[:config]).filter { |h| h.key?('load') }
-
-    check_load_config(*config)
-
-    raise 'Failed to connect to virtuoso' unless Virtuoso.server_alive
-
-    config.each do |c|
-      dir = c.dig('load', 'directory')
-      mask = c.dig('load', 'mask')
-      graph = c.dig('load', 'graph')
-
-      ISQL.exec "ld_dir('#{dir}', '#{mask}', '#{graph}');"
-    end
-  end
-
+def virtuoso_load
   unless Virtuoso.count_remaining&.positive?
     puts 'Nothing to load'
     return
@@ -284,6 +190,12 @@ def virtuoso_list
   puts Virtuoso.list
 end
 
+def virtuoso_list_error
+  raise 'Failed to connect to virtuoso' unless Virtuoso.server_alive
+
+  puts Virtuoso.list_error
+end
+
 def virtuoso_status
   raise 'Failed to connect to virtuoso' unless Virtuoso.server_alive
 
@@ -296,25 +208,36 @@ def virtuoso_reset
   raise 'Failed to connect to virtuoso' unless Virtuoso.server_alive
 
   Virtuoso.reset_error
-
-  puts 'List of errors'
-  puts
-  puts Virtuoso.list_error
 end
+
+# main
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{$PROGRAM_NAME} [options] command"
+  opts.separator ''
+  opts.separator 'Commands:'
+  opts.separator '    add        Add RDF files to load list [required arguments: <dir> <mask> <graph>]'
+  opts.separator '    drop       Drop a graph [required arguments: <graph>]'
+  opts.separator '    graph      List loaded graphs'
+  opts.separator '    list       Print load list'
+  opts.separator '    list_error Print error list'
+  opts.separator '    load       Execute RDF loader'
+  opts.separator '    reset      Cancel load errors'
+  opts.separator '    status     Print load status'
+end.parse!
 
 case ARGV[0]
 when 'add'
   virtuoso_add_dir(ARGV[1], ARGV[2], ARGV[3])
-when 'convert'
-  rdf_convert(**options)
 when 'drop'
   virtuoso_drop(ARGV[1])
 when 'graph'
   virtuoso_graph
 when 'list'
   virtuoso_list
+when 'list_error'
+  virtuoso_list_error
 when 'load'
-  virtuoso_load(**options)
+  virtuoso_load
 when 'reset'
   virtuoso_reset
 when 'status'
