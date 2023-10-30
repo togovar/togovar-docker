@@ -14,15 +14,10 @@ if [[ $1 == "start" ]]; then
 
   bundle exec unicorn -c config/unicorn.rb
 elif [[ $1 == "build" ]]; then
-  # workaround for https://github.com/npm/cli/issues/624
-  orig=$(stat -c '%u' /opt/togovar/app)
-  chown root /opt/togovar/app
-  npm install --legacy-peer-deps
-  chown "$orig" /opt/togovar/app
-
   if [[ -d /opt/togovar/app/stanza ]]; then
-    cd /opt/togovar/app/stanza || exit
-    npm install --legacy-peer-deps
+    cd /opt/togovar/app/stanza
+
+    npm install
 
     echo >&2
     echo "build stanza" >&2
@@ -31,6 +26,8 @@ elif [[ $1 == "build" ]]; then
 
     cd -
   fi
+
+  npm install
 
   echo >&2
   echo "build frontend" >&2
