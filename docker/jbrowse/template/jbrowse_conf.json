@@ -1,12 +1,8 @@
 {
   "datasets": [
     {
-      "url": "?data=data/GRCh37",
-      "name": "GRCh37"
-    },
-    {
-      "url": "?data=data/GRCh38",
-      "name": "GRCh38"
+      "url": "?data=data",
+      "name": "TogoVar"
     }
   ]
 }
