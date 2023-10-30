@@ -38,6 +38,7 @@ services:
       TOGOVAR_ENDPOINT_JBROWSE: ${TOGOVAR_ENDPOINT_JBROWSE:-https://togovar.org/jbrowse}
       TOGOVAR_ENDPOINT_STANZA: ${TOGOVAR_ENDPOINT_STANZA:-https://togovar.org/stanza}
       TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.org}
+      TOGOVAR_FRONTEND_STANZA_URL: ${TOGOVAR_FRONTEND_STANZA_URL:-https://togovar.org/stanza}
       TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:-GRCh38}
     volumes:
       - ./app:/opt/togovar/app
