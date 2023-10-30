@@ -37,21 +37,23 @@ if [[ ${#target[@]} != "0" ]]; then
       mkdir -p "$d"
       { set +x; } 2>/dev/null
     done
+
+    for d in \
+      "${ELASTICSEARCH_VOLUMES_01_DATA:-./data/elasticsearch/01}" \
+      "${ELASTICSEARCH_VOLUMES_02_DATA:-./data/elasticsearch/02}" \
+      "${ELASTICSEARCH_VOLUMES_03_DATA:-./data/elasticsearch/03}" \
+      "${ELASTICSEARCH_VOLUMES_04_DATA:-./data/elasticsearch/04}" \
+      "${ELASTICSEARCH_VOLUMES_05_DATA:-./data/elasticsearch/05}" \
+      "${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}"; do
+      set -x
+      chmod 777 "$d"
+      { set +x; } 2>/dev/null
+    done
+
     ;;
   *)
     echo "Abort."
+    exit 1
     ;;
   esac
 fi
-
-for d in \
-  "${ELASTICSEARCH_VOLUMES_01_DATA:-./data/elasticsearch/01}" \
-  "${ELASTICSEARCH_VOLUMES_02_DATA:-./data/elasticsearch/02}" \
-  "${ELASTICSEARCH_VOLUMES_03_DATA:-./data/elasticsearch/03}" \
-  "${ELASTICSEARCH_VOLUMES_04_DATA:-./data/elasticsearch/04}" \
-  "${ELASTICSEARCH_VOLUMES_05_DATA:-./data/elasticsearch/05}" \
-  "${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}"; do
-  set -x
-  chmod 777 "$d"
-  { set +x; } 2>/dev/null
-done
