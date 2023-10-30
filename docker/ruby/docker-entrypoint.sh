@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 mkdir -p /opt/togovar/app/tmp/{pids,sockets}
 
 if [[ $1 == "start" ]]; then
@@ -27,7 +29,7 @@ elif [[ $1 == "build" ]]; then
     npx togostanza build --output-path /tmp/stanza
     cp -rv /tmp/stanza /var/www/
 
-    cd - || exit
+    cd -
   fi
 
   echo >&2
