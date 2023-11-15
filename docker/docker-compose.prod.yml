@@ -9,7 +9,7 @@ x-logging:
 
 services:
   nginx:
-    image: nginx:1.21
+    image: nginx:1.25.2
     volumes:
       - ${PUBLIC_DIR:-/var/www/togovar/public}:/var/www/public:ro
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
@@ -26,20 +26,20 @@ services:
 
   app:
     build: docker/ruby
-    image: togovar_app:${VERSION:-latest}
+    image: togovar_app:2023.1
     environment:
-      NODE_ENV: production
       RAILS_ENV: production
       WEB_CONCURRENCY: 10
       SECRET_KEY_BASE: ${SECRET_KEY_BASE:-changeme}
       TOGOVAR_ELASTICSEARCH_HOST: elasticsearch01:9200
-      TOGOVAR_ENDPOINT_SPARQL: ${TOGOVAR_ENDPOINT_SPARQL:-https://togovar.biosciencedbc.jp/sparql}
-      TOGOVAR_ENDPOINT_SPARQLIST: ${TOGOVAR_ENDPOINT_SPARQLIST:-https://togovar.biosciencedbc.jp/sparqlist}
-      TOGOVAR_ENDPOINT_SEARCH: ${TOGOVAR_ENDPOINT_SEARCH:-https://togovar.biosciencedbc.jp/search}
-      TOGOVAR_ENDPOINT_JBROWSE: ${TOGOVAR_ENDPOINT_JBROWSE:-https://togovar.biosciencedbc.jp/jbrowse}
-      TOGOVAR_ENDPOINT_STANZA: ${TOGOVAR_ENDPOINT_STANZA:-https://togovar.biosciencedbc.jp/stanza}
-      TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.biosciencedbc.jp}
-      TOGOVAR_FRONTEND_REFERENCE: ${TOGOVAR_FRONTEND_REFERENCE:-GRCh38}
+      TOGOVAR_ENDPOINT_SPARQL: ${TOGOVAR_ENDPOINT_SPARQL:-https://togovar.org/sparql}
+      TOGOVAR_ENDPOINT_SPARQLIST: ${TOGOVAR_ENDPOINT_SPARQLIST:-https://togovar.org/sparqlist}
+      TOGOVAR_ENDPOINT_SEARCH: ${TOGOVAR_ENDPOINT_SEARCH:-https://togovar.org/search}
+      TOGOVAR_ENDPOINT_JBROWSE: ${TOGOVAR_ENDPOINT_JBROWSE:-https://togovar.org/jbrowse}
+      TOGOVAR_ENDPOINT_STANZA: ${TOGOVAR_ENDPOINT_STANZA:-https://togovar.org/stanza}
+      TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.org}
+      TOGOVAR_FRONTEND_STANZA_URL: ${TOGOVAR_FRONTEND_STANZA_URL:-https://togovar.org/stanza}
+      TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:-GRCh38}
     volumes:
       - ./app:/opt/togovar/app
       - ./.git:/opt/togovar/.git
@@ -54,14 +54,14 @@ services:
 
   jbrowse:
     build: docker/jbrowse
-    image: togovar_jbrowse:${VERSION:-latest}
+    image: togovar_jbrowse:2022.2
     volumes:
       - ./docker/jbrowse/template/jbrowse_conf.json:/var/www/jbrowse_conf.json:ro
       - ${JBROWSE_VOLUMES_DATA:-./data/jbrowse/data}:/var/www/data
     logging: *default-logging
 
   sparqlist:
-    image: ghcr.io/dbcls/sparqlist:latest
+    image: ghcr.io/dbcls/sparqlist:snapshot-fffa8c9
     environment:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:-changeme}
       SPARQLIST_TOGOVAR_API: http://nginx/api
@@ -74,7 +74,7 @@ services:
 
   sparql-proxy:
     build: docker/proxy
-    image: togovar_proxy:${VERSION:-latest}
+    image: togovar_proxy:2023.1
     environment:
       SPARQL_BACKEND: http://virtuoso:8890/sparql
       ADMIN_USER: admin
@@ -90,16 +90,16 @@ services:
 
   virtuoso:
     build: docker/virtuoso
-    image: togovar_virtuoso:${VERSION:-latest}
+    image: togovar_virtuoso:2023.1
     environment:
       DBA_PASSWORD: dba
       SPARQL_UPDATE: "false"
-      DEFAULT_GRAPH: http://togovar.biosciencedbc.jp
+      DEFAULT_GRAPH: http://togovar.org
       VIRT_Parameters_DirsAllowed: /
       VIRT_SPARQL_MaxQueryCostEstimationTime: 10000
       VIRT_SPARQL_MaxQueryExecutionTime: 600
       VIRT_SPARQL_ResultSetMaxRows: 1000000
-      VIRT_URIQA_DefaultHost: togovar.biosciencedbc.jp
+      VIRT_URIQA_DefaultHost: togovar.org
       ## Uncomment next two lines if there is 2 GB system memory free
       #VIRT_Parameters_NumberOfBuffers: 170000
       #VIRT_Parameters_MaxDirtyBuffers: 130000
@@ -126,11 +126,11 @@ services:
     logging: *default-logging
 
   redis:
-    image: redis:6
+    image: redis:7.2.1
     logging: *default-logging
 
   elasticsearch01: &es
-    image: elasticsearch:7.16.3
+    image: elasticsearch:8.10.2
     #ulimits: # failed to set ulimits on rootless
     #  memlock:
     #    soft: -1
@@ -153,6 +153,8 @@ services:
       - ${ELASTICSEARCH_VOLUMES_01_DATA:-./data/elasticsearch/01}:/usr/share/elasticsearch/data
       - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     logging: *default-logging
+    ports:
+      - "${ELASTICSEARCH_PORT:-9200}:9200"
 
   elasticsearch02:
     <<: *es
@@ -205,6 +207,16 @@ services:
       - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     depends_on: []
     ports: []
+
+  kibana:
+    image: kibana:8.10.2
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch01:9200
+      I18N_LOCALE: ja-JP
+    depends_on:
+      - elasticsearch01
+    ports:
+      - "${KIBANA_PORT:-5601}:5601"
 
 volumes:
   app_bundle:
