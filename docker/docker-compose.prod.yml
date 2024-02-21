@@ -139,7 +139,7 @@ services:
       discovery.seed_hosts: elasticsearch02,elasticsearch03,elasticsearch04,elasticsearch05
       node.name: node01
       cluster.initial_master_nodes: node01,node02,node03,node04,node05
-      ES_JAVA_OPTS: -Xms16g -Xmx16g
+      ES_JAVA_OPTS: ${ELASTICSEARCH_JAVA_OPTS:--Xms16g -Xmx16g}
       bootstrap.memory_lock: "true"
       xpack.monitoring.collection.enabled: "true"
       xpack.security.enabled: "false"
