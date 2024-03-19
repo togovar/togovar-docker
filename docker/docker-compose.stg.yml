@@ -62,6 +62,15 @@ services:
     ports:
       - "${JBROWSE_PORT:-8080}:8080"
 
+  jbrowse2:
+    build: docker/jbrowse2
+    image: togovar_jbrowse2:dev
+    volumes:
+      - ${JBROWSE2_VOLUMES_DATA:-./data/jbrowse/data}:/var/www/html/jbrowse2:ro
+    logging: *default-logging
+    ports:
+      - "${JBROWSE2_PORT:-8083}:8080"
+
   sparqlist:
     image: ghcr.io/dbcls/sparqlist:snapshot-fffa8c9
     environment:
