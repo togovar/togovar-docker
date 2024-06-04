@@ -10,18 +10,18 @@ x-logging:
 services:
   nginx:
     image: nginx:1.25.2
-    volumes:
-      - ${PUBLIC_DIR:-/var/www/togovar/public}:/var/www/public:ro
-      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - app_sockets:/tmp/sockets:ro
-      - app_www:/var/www
-    ports:
-      - ${NGINX_PORT:-80}:80
     depends_on:
       - app
       - jbrowse
       - sparqlist
       - sparql-proxy
+    ports:
+      - ${NGINX_PORT:-80}:80
+    volumes:
+      - ${PUBLIC_DIR:-/var/www/togovar/public}:/var/www/public:ro
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - app_sockets:/tmp/sockets:ro
+      - app_www:/var/www
     logging: *default-logging
 
   app:
@@ -148,7 +148,6 @@ services:
       - ${ELASTICSEARCH_VOLUMES_02_DATA:-./data/elasticsearch/02}:/usr/share/elasticsearch/data
       - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     depends_on: []
-    ports: []
 
   elasticsearch03:
     <<: *es
@@ -161,7 +160,6 @@ services:
       - ${ELASTICSEARCH_VOLUMES_03_DATA:-./data/elasticsearch/03}:/usr/share/elasticsearch/data
       - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     depends_on: []
-    ports: []
 
   elasticsearch04:
     <<: *es
@@ -174,7 +172,6 @@ services:
       - ${ELASTICSEARCH_VOLUMES_04_DATA:-./data/elasticsearch/04}:/usr/share/elasticsearch/data
       - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     depends_on: []
-    ports: []
 
   elasticsearch05:
     <<: *es
@@ -187,7 +184,6 @@ services:
       - ${ELASTICSEARCH_VOLUMES_05_DATA:-./data/elasticsearch/05}:/usr/share/elasticsearch/data
       - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
     depends_on: []
-    ports: []
 
 volumes:
   app_bundle:
