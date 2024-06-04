@@ -44,7 +44,7 @@ if [[ ${#target[@]} != "0" ]]; then
       "${ELASTICSEARCH_VOLUMES_05_DATA:-./data/elasticsearch/05}" \
       "${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}"; do
       set -x
-      chmod 777 "$d"
+      chmod g+rwx "$d"
       { set +x; } 2>/dev/null
     done
 
