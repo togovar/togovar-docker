@@ -7,8 +7,6 @@ mkdir -p /opt/togovar/app/tmp/{pids,sockets}
 if [[ $1 == "start" ]]; then
   rm -fv /opt/togovar/app/tmp/pids/unicorn.pid
 
-  bundle install
-
   echo >&2
   echo "start unicorn..." >&2
 
@@ -17,8 +15,6 @@ elif [[ $1 == "build" ]]; then
   if [[ -d /opt/togovar/app/stanza ]]; then
     cd /opt/togovar/app/stanza
 
-    npm install
-
     echo >&2
     echo "build stanza" >&2
     npx togostanza build --output-path /tmp/stanza
@@ -26,8 +22,6 @@ elif [[ $1 == "build" ]]; then
 
     cd -
   fi
-
-  npm install
 
   echo >&2
   echo "build frontend" >&2
