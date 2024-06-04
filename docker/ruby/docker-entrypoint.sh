@@ -15,6 +15,8 @@ elif [[ $1 == "build" ]]; then
   if [[ -d /opt/togovar/app/stanza ]]; then
     cd /opt/togovar/app/stanza
 
+    npm install
+
     echo >&2
     echo "build stanza" >&2
     npx togostanza build --output-path /tmp/stanza
