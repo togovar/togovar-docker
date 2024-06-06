@@ -2,10 +2,10 @@ version: '3.7'
 
 x-logging:
   &default-logging
-  driver: "json-file"
+  driver: json-file
   options:
-    max-size: "1m"
-    max-file: "1"
+    max-size: 1m
+    max-file: 1
 
 services:
   nginx:
@@ -16,10 +16,10 @@ services:
       - sparqlist
       - sparql-proxy
     ports:
-      - "${NGINX_PORT:-80}:80"
+      - ${NGINX_PORT:-80}:80
     volumes:
-      - ${PUBLIC_DIR:-/var/www/togovar/public}:/var/www/public:ro
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${PUBLIC_DIR:?}:/var/www/public:ro
       - app_sockets:/tmp/sockets:ro
       - app_www:/var/www
     logging: *default-logging
@@ -30,7 +30,7 @@ services:
     environment:
       RAILS_ENV: production
       WEB_CONCURRENCY: 10
-      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-changeme}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:?}
       TOGOVAR_ELASTICSEARCH_HOST: elasticsearch01:9200
       TOGOVAR_ENDPOINT_SPARQL: ${TOGOVAR_ENDPOINT_SPARQL:-https://togovar.org/sparql}
       TOGOVAR_ENDPOINT_SPARQLIST: ${TOGOVAR_ENDPOINT_SPARQLIST:-https://togovar.org/sparqlist}
@@ -39,7 +39,7 @@ services:
       TOGOVAR_ENDPOINT_STANZA: ${TOGOVAR_ENDPOINT_STANZA:-https://togovar.org/stanza}
       TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.org}
       TOGOVAR_FRONTEND_STANZA_URL: ${TOGOVAR_FRONTEND_STANZA_URL:-https://togovar.org/stanza}
-      TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:-GRCh38}
+      TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:?}
     volumes:
       - ./app:/opt/togovar/app
       - ./.git:/opt/togovar/.git
@@ -57,13 +57,13 @@ services:
     image: togovar_jbrowse:2022.2
     volumes:
       - ./docker/jbrowse/template/jbrowse_conf.json:/var/www/jbrowse_conf.json:ro
-      - ${JBROWSE_VOLUMES_DATA:-./data/jbrowse/data}:/var/www/data
+      - ${JBROWSE_DATA:?}:/var/www/data
     logging: *default-logging
 
   sparqlist:
     image: ghcr.io/dbcls/sparqlist:snapshot-fffa8c9
     environment:
-      ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:-changeme}
+      ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:?}
       SPARQLIST_TOGOVAR_API: http://nginx/api
       SPARQLIST_TOGOVAR_SPARQL: http://sparql-proxy:3000/proxy/sparql
       SPARQLIST_TOGOVAR_SEARCH: http://nginx/search
@@ -78,7 +78,7 @@ services:
     environment:
       SPARQL_BACKEND: http://virtuoso:8890/sparql
       ADMIN_USER: admin
-      ADMIN_PASSWORD: ${SPARQL_PROXY_ADMIN_PASSWORD:-changeme}
+      ADMIN_PASSWORD: ${SPARQL_PROXY_ADMIN_PASSWORD:?}
       CACHE_STORE: redis
       REDIS_URL: redis://redis:6379
       MAX_CONCURRENCY: 50
@@ -101,7 +101,7 @@ services:
       VIRT_Parameters_NumberOfBuffers: 1360000
       VIRT_Parameters_MaxDirtyBuffers: 1000000
     volumes:
-      - ${VIRTUOSO_VOLUMES_DATABASE:-./data/virtuoso/database}:/database
+      - ${VIRTUOSO_DATA:?}:/database
     logging: *default-logging
 
   redis:
@@ -133,11 +133,11 @@ services:
       - elasticsearch04
       - elasticsearch05
     volumes:
-      - ${ELASTICSEARCH_VOLUMES_01_DATA:-./data/elasticsearch/01}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
+      - ${ELASTICSEARCH_01_DATA:?}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot
     logging: *default-logging
     ports:
-      - "${ELASTICSEARCH_PORT:-9200}:9200"
+      - ${ELASTICSEARCH_PORT:-9200}:9200
 
   elasticsearch02:
     <<: *es
@@ -147,8 +147,8 @@ services:
       discovery.seed_hosts: elasticsearch01,elasticsearch03,elasticsearch04,elasticsearch05
       cluster.initial_master_nodes: node01,node02,node03,node04,node05
     volumes:
-      - ${ELASTICSEARCH_VOLUMES_02_DATA:-./data/elasticsearch/02}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
+      - ${ELASTICSEARCH_02_DATA:?}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot
     depends_on: []
     ports: []
 
@@ -160,8 +160,8 @@ services:
       discovery.seed_hosts: elasticsearch01,elasticsearch02,elasticsearch04,elasticsearch05
       cluster.initial_master_nodes: node01,node02,node03,node04,node05
     volumes:
-      - ${ELASTICSEARCH_VOLUMES_03_DATA:-./data/elasticsearch/03}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
+      - ${ELASTICSEARCH_03_DATA:?}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot
     depends_on: []
     ports: []
 
@@ -173,8 +173,8 @@ services:
       discovery.seed_hosts: elasticsearch01,elasticsearch02,elasticsearch03,elasticsearch05
       cluster.initial_master_nodes: node01,node02,node03,node04,node05
     volumes:
-      - ${ELASTICSEARCH_VOLUMES_04_DATA:-./data/elasticsearch/04}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
+      - ${ELASTICSEARCH_04_DATA:?}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot
     depends_on: []
     ports: []
 
@@ -186,8 +186,8 @@ services:
       discovery.seed_hosts: elasticsearch01,elasticsearch02,elasticsearch03,elasticsearch04
       cluster.initial_master_nodes: node01,node02,node03,node04,node05
     volumes:
-      - ${ELASTICSEARCH_VOLUMES_05_DATA:-./data/elasticsearch/05}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}:/usr/share/elasticsearch/snapshot
+      - ${ELASTICSEARCH_05_DATA:?}:/usr/share/elasticsearch/data
+      - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot
     depends_on: []
     ports: []
 
