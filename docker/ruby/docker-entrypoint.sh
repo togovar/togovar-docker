@@ -5,7 +5,7 @@ set -e
 mkdir -p /opt/togovar/app/tmp/{pids,sockets}
 
 if [[ $1 == "start" ]]; then
-  rm -fv /opt/togovar/app/tmp/cache/*
+  rm -rfv /opt/togovar/app/tmp/cache/*
   rm -fv /opt/togovar/app/tmp/pids/unicorn.pid
 
   echo >&2
