@@ -26,7 +26,7 @@ services:
 
   app:
     build: docker/ruby
-    image: togovar_app:2024.1
+    image: togovar_app:2024.2
     environment:
       RAILS_ENV: production
       WEB_CONCURRENCY: 10
