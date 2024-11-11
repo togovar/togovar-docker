@@ -23,7 +23,8 @@ elif [[ $1 == "build" ]]; then
     npx togostanza build --output-path /tmp/stanza
 
     if [[ -n $TOGOVAR_STANZA_REWRITE_URL ]]; then
-      find /tmp/stanza \( -name '*.html' -or -name '*.json' \) -exec sed -i "s|$TOGOVAR_STANZA_REWRITE_URL|g" {} \;
+      echo "Rewrite URL: $TOGOVAR_STANZA_REWRITE_URL" >&2
+      find /tmp/stanza \( -name '*.html' -or -name '*.js' -or -name '*.json' \) -exec sed -i "s|$TOGOVAR_STANZA_REWRITE_URL|g" {} \;
     fi
 
     cp -rv /tmp/stanza /var/www/
