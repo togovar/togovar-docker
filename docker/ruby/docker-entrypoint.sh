@@ -21,6 +21,11 @@ elif [[ $1 == "build" ]]; then
     echo >&2
     echo "build stanza" >&2
     npx togostanza build --output-path /tmp/stanza
+
+    if [[ -n $TOGOVAR_STANZA_REWRITE_URL ]]; then
+      find /tmp/stanza \( -name '*.html' -or -name '*.json' \) -exec sed -i "s|$TOGOVAR_STANZA_REWRITE_URL|g" {} \;
+    fi
+
     cp -rv /tmp/stanza /var/www/
 
     cd -
