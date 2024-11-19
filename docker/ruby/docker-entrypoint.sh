@@ -13,14 +13,21 @@ if [[ $1 == "start" ]]; then
 
   bundle exec unicorn -c config/unicorn.rb
 elif [[ $1 == "build" ]]; then
-  rm -rf /tmp/stanza
   rm -rf /opt/togovar/app/dist
+
+  echo >&2
+  echo "build frontend" >&2
+  npm run build
+
   rm -rf /var/www/*
+  cp -rv /opt/togovar/app/dist/* /var/www/
 
   if [[ -d /opt/togovar/app/stanza ]]; then
     cd /opt/togovar/app/stanza
 
     npm install
+
+    rm -rf /tmp/stanza
 
     echo >&2
     echo "build stanza" >&2
@@ -35,12 +42,6 @@ elif [[ $1 == "build" ]]; then
 
     cd -
   fi
-
-  echo >&2
-  echo "build frontend" >&2
-  npm run build
-
-  cp -rv /opt/togovar/app/dist/* /var/www/
 else
   exec "$@"
 fi
