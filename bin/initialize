@@ -7,13 +7,13 @@ if [[ -e "${SCRIPT_PATH}/../.env" ]]; then
 fi
 
 dirs=(
-  "${JBROWSE_VOLUMES_DATA:-./data/jbrowse/data}"
-  "${ELASTICSEARCH_VOLUMES_01_DATA:-./data/elasticsearch/01}"
-  "${ELASTICSEARCH_VOLUMES_02_DATA:-./data/elasticsearch/02}"
-  "${ELASTICSEARCH_VOLUMES_03_DATA:-./data/elasticsearch/03}"
-  "${ELASTICSEARCH_VOLUMES_04_DATA:-./data/elasticsearch/04}"
-  "${ELASTICSEARCH_VOLUMES_05_DATA:-./data/elasticsearch/05}"
-  "${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}"
+  "${JBROWSE_DATA:-./data/jbrowse/data}"
+  "${ELASTICSEARCH_01_DATA:-./data/elasticsearch/01}"
+  "${ELASTICSEARCH_02_DATA:-./data/elasticsearch/02}"
+  "${ELASTICSEARCH_03_DATA:-./data/elasticsearch/03}"
+  "${ELASTICSEARCH_04_DATA:-./data/elasticsearch/04}"
+  "${ELASTICSEARCH_05_DATA:-./data/elasticsearch/05}"
+  "${ELASTICSEARCH_SNAPSHOT:-./data/elasticsearch/snapshot}"
 )
 
 target=()
@@ -36,13 +36,12 @@ if [[ ${#target[@]} != "0" ]]; then
       { set +x; } 2>/dev/null
     done
 
-    for d in \
-      "${ELASTICSEARCH_VOLUMES_01_DATA:-./data/elasticsearch/01}" \
-      "${ELASTICSEARCH_VOLUMES_02_DATA:-./data/elasticsearch/02}" \
-      "${ELASTICSEARCH_VOLUMES_03_DATA:-./data/elasticsearch/03}" \
-      "${ELASTICSEARCH_VOLUMES_04_DATA:-./data/elasticsearch/04}" \
-      "${ELASTICSEARCH_VOLUMES_05_DATA:-./data/elasticsearch/05}" \
-      "${ELASTICSEARCH_VOLUMES_SNAPSHOT:-./data/elasticsearch/snapshot}"; do
+    for d in "${ELASTICSEARCH_01_DATA:-./data/elasticsearch/01}" \
+             "${ELASTICSEARCH_02_DATA:-./data/elasticsearch/02}" \
+             "${ELASTICSEARCH_03_DATA:-./data/elasticsearch/03}" \
+             "${ELASTICSEARCH_04_DATA:-./data/elasticsearch/04}" \
+             "${ELASTICSEARCH_05_DATA:-./data/elasticsearch/05}" \
+             "${ELASTICSEARCH_SNAPSHOT:-./data/elasticsearch/snapshot}"; do
       set -x
       chmod g+rwx "$d"
       { set +x; } 2>/dev/null
