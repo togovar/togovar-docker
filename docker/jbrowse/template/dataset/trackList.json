@@ -71,11 +71,11 @@
     },
     {
       "category": "Frequency",
-      "key": "JGA-NGS",
-      "label": "jga_ngs",
+      "key": "JGA-WES",
+      "label": "jga_wes",
       "type": "JBrowse/View/Track/Wiggle/XYPlot",
       "storeClass": "JBrowse/Store/BigWig",
-      "urlTemplate": "freq/jga_ngs.bw",
+      "urlTemplate": "freq/jga_wes.bw",
       "metadata": {
         "Category": "Frequency"
       },
