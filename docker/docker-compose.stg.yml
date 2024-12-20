@@ -10,6 +10,12 @@ x-logging:
 services:
   nginx:
     image: nginx:1.25.2
+    environment:
+      TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:?}
+    command:
+      - /bin/sh
+      - -c
+      - "envsubst '$$TOGOVAR_REFERENCE' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
     depends_on:
       - app
       - jbrowse
@@ -18,7 +24,7 @@ services:
     ports:
       - ${NGINX_PORT:-80}:80
     volumes:
-      - ./docker/nginx/staging.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/staging.conf:/etc/nginx/conf.d/default.conf.template:ro
       - ${PUBLIC_DIR:?}:/var/www/public:ro
       - app_sockets:/tmp/sockets:ro
       - app_www:/var/www
