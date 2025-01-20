@@ -54,7 +54,7 @@ services:
       TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_NAME: ${TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_NAME:-}
       TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_REGEX: ${TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_REGEX:-}
     volumes:
-      - ./app:/opt/togovar/app
+      - ./backend:/opt/togovar/app
       - ./.git:/opt/togovar/.git
       - app_bundle:/usr/local/bundle
       - app_log:/opt/togovar/app/log
