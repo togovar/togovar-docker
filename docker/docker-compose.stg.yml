@@ -79,7 +79,7 @@ services:
     logging: *default-logging
 
   sparqlist:
-    image: ghcr.io/dbcls/sparqlist:snapshot-fffa8c9
+    image: ghcr.io/dbcls/sparqlist:snapshot-f444cf1
     environment:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:?}
       SPARQLIST_TOGOVAR_APP: http://nginx
