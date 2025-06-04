@@ -5,7 +5,7 @@ x-logging:
   driver: json-file
   options:
     max-size: 1m
-    max-file: '1'
+    max-file: 1
 
 services:
   nginx:
@@ -19,29 +19,47 @@ services:
     ports:
       - ${NGINX_PORT:-80}:80
     volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx/production.conf:/etc/nginx/conf.d/default.conf:ro
       - ${PUBLIC_DIR:?}:/var/www/public:ro
       - app_sockets:/tmp/sockets:ro
-      - app_www:/var/www
+      - nginx_www:/var/www
     logging: *default-logging
 
+  frontend-build:
+    image: node:18
+    environment:
+      TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:?}
+      TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.org}
+      TOGOVAR_FRONTEND_STANZA_URL: ${TOGOVAR_FRONTEND_STANZA_URL:-https://togovar.org/stanza}
+      TOGOVAR_ENDPOINT_SPARQL: ${TOGOVAR_ENDPOINT_SPARQL:-https://togovar.org/sparql}
+      TOGOVAR_ENDPOINT_SEARCH: ${TOGOVAR_ENDPOINT_SEARCH:-https://togovar.org/search}
+      TOGOVAR_ENDPOINT_SPARQLIST: ${TOGOVAR_ENDPOINT_SPARQLIST:-https://togovar.org/sparqlist}
+      TOGOVAR_ENDPOINT_JBROWSE: ${TOGOVAR_ENDPOINT_JBROWSE:-https://togovar.org/jbrowse}
+    entrypoint: /docker-entrypoint.sh
+    command:
+      - build
+    working_dir: /work
+    volumes:
+      - ./docker/frontend-build/docker-entrypoint.sh:/docker-entrypoint.sh:ro
+      - ./frontend:/work/frontend
+      - ./stanza:/work/stanza
+      - nginx_www:/var/www
+
   app:
-    build: docker/ruby
-    image: togovar_app:2024.2
+    image: ruby:3.2.4
     restart: unless-stopped
+    depends_on:
+      frontend-build:
+        condition: service_completed_successfully
     environment:
       RAILS_ENV: production
       WEB_CONCURRENCY: 10
       SECRET_KEY_BASE: ${SECRET_KEY_BASE:?}
       TOGOVAR_ELASTICSEARCH_HOST: elasticsearch01:9200
-      TOGOVAR_ENDPOINT_SPARQL: ${TOGOVAR_ENDPOINT_SPARQL:-https://togovar.org/sparql}
-      TOGOVAR_ENDPOINT_SPARQLIST: ${TOGOVAR_ENDPOINT_SPARQLIST:-https://togovar.org/sparqlist}
-      TOGOVAR_ENDPOINT_SEARCH: ${TOGOVAR_ENDPOINT_SEARCH:-https://togovar.org/search}
-      TOGOVAR_ENDPOINT_JBROWSE: ${TOGOVAR_ENDPOINT_JBROWSE:-https://togovar.org/jbrowse}
-      TOGOVAR_ENDPOINT_STANZA: ${TOGOVAR_ENDPOINT_STANZA:-https://togovar.org/stanza}
-      TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.org}
-      TOGOVAR_FRONTEND_STANZA_URL: ${TOGOVAR_FRONTEND_STANZA_URL:-https://togovar.org/stanza}
       TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:?}
+      TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.org}
+      TOGOVAR_ENDPOINT_SPARQL: ${TOGOVAR_ENDPOINT_SPARQL:-https://togovar.org/sparql}
       TOGOVAR_REDIS_HOST: redis
       TOGOVAR_REDIS_PORT: 6379
       TOGOVAR_REDIS_SESSION_EXPIRE: ${TOGOVAR_REDIS_SESSION_EXPIRE:-86400}
@@ -53,16 +71,14 @@ services:
       TOGOVAR_KEYCLOAK_AUTHORIZE_SCOPE: ${TOGOVAR_KEYCLOAK_AUTHORIZE_SCOPE:-}
       TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_NAME: ${TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_NAME:-}
       TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_REGEX: ${TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_REGEX:-}
+    entrypoint: /docker-entrypoint.sh
+    command:
+      - start
+    working_dir: /app
     volumes:
-      - ./backend:/opt/togovar/app
-      - ./.git:/opt/togovar/.git
+      - ./docker/ruby/docker-entrypoint.sh:/docker-entrypoint.sh:ro
+      - ./backend:/app
       - app_bundle:/usr/local/bundle
-      - app_log:/opt/togovar/app/log
-      - app_node_modules:/opt/togovar/app/node_modules
-      - app_sockets:/opt/togovar/app/tmp/sockets
-      - app_stanza_node_modules:/opt/togovar/app/stanza/node_modules
-      - app_tmp:/opt/togovar/app/tmp
-      - app_www:/var/www
     logging: *default-logging
 
   jbrowse:
@@ -75,7 +91,7 @@ services:
     logging: *default-logging
 
   sparqlist:
-    image: ghcr.io/dbcls/sparqlist:snapshot-fffa8c9
+    image: ghcr.io/dbcls/sparqlist:snapshot-f444cf1
     restart: unless-stopped
     environment:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:?}
@@ -200,9 +216,4 @@ services:
 
 volumes:
   app_bundle:
-  app_log:
-  app_node_modules:
-  app_sockets:
-  app_stanza_node_modules:
-  app_tmp:
-  app_www:
+  nginx_www:
