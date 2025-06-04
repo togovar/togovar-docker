@@ -10,6 +10,12 @@ x-logging:
 services:
   nginx:
     image: nginx:1.25.2
+    environment:
+      TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:?}
+    command:
+      - /bin/sh
+      - -c
+      - "envsubst '$$TOGOVAR_REFERENCE' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
     depends_on:
       - app
       - jbrowse
@@ -18,7 +24,7 @@ services:
     ports:
       - ${NGINX_PORT:-80}:80
     volumes:
-      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/staging.conf:/etc/nginx/conf.d/default.conf.template:ro
       - ${PUBLIC_DIR:?}:/var/www/public:ro
       - app_sockets:/tmp/sockets:ro
       - app_www:/var/www
@@ -53,7 +59,7 @@ services:
       TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_NAME: ${TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_NAME:-}
       TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_REGEX: ${TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_REGEX:-}
     volumes:
-      - ./app:/opt/togovar/app
+      - ./backend:/opt/togovar/app
       - ./.git:/opt/togovar/.git
       - app_bundle:/usr/local/bundle
       - app_log:/opt/togovar/app/log
@@ -73,12 +79,11 @@ services:
     logging: *default-logging
 
   sparqlist:
-    image: ghcr.io/dbcls/sparqlist:snapshot-fffa8c9
+    image: ghcr.io/dbcls/sparqlist:snapshot-f444cf1
     environment:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:?}
-      SPARQLIST_TOGOVAR_API: http://nginx/api
+      SPARQLIST_TOGOVAR_APP: http://nginx
       SPARQLIST_TOGOVAR_SPARQL: http://sparql-proxy:3000/proxy/sparql
-      SPARQLIST_TOGOVAR_SEARCH: http://nginx/search
       SPARQLIST_TOGOVAR_SPARQLIST: http://sparqlist:3000/sparqlist
     volumes:
       - ./sparqlist:/app/repository

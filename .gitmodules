@@ -1,6 +1,6 @@
-[submodule "app"]
-	path = app
-	url = https://github.com/togovar/togovar-backend.git
 [submodule "sparqlist"]
 	path = sparqlist
 	url = https://github.com/togovar/sparqlist.git
+[submodule "backend"]
+	path = backend
+	url = https://github.com/togovar/togovar-backend.git
