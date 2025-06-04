@@ -78,6 +78,7 @@ services:
       - ./docker/ruby/docker-entrypoint.sh:/docker-entrypoint.sh:ro
       - ./backend:/app
       - app_bundle:/usr/local/bundle
+      - app_sockets:/app/tmp/sockets
     logging: *default-logging
 
   jbrowse:
@@ -215,4 +216,5 @@ services:
 
 volumes:
   app_bundle:
+  app_sockets:
   nginx_www:
