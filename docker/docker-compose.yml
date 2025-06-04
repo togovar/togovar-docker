@@ -41,9 +41,8 @@ services:
       - build
     working_dir: /work
     volumes:
+      - .:/work
       - ./docker/frontend-build/docker-entrypoint.sh:/docker-entrypoint.sh:ro
-      - ./frontend:/work/frontend
-      - ./stanza:/work/stanza
       - nginx_www:/var/www
 
   app:

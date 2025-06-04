@@ -2,8 +2,16 @@
 
 set -euo pipefail
 
+FRONTEND_CACHE=/var/www/.frontend.sha1
+STANZA_CACHE=/var/www/.stanza.sha1
+
 function build_frontend {
   cd /work/frontend
+
+  if [[ -e $FRONTEND_CACHE && $(cat $FRONTEND_CACHE) = $(git rev-parse HEAD) ]]; then
+    echo "Skip building frontend - git revision has not changed"
+    return
+  fi
 
   echo
   echo "===================="
@@ -16,10 +24,17 @@ function build_frontend {
   npm run build -- --output-path /tmp/dist
 
   cp -rv /tmp/dist/* /var/www/
+
+  git rev-parse HEAD > $FRONTEND_CACHE
 }
 
 function build_stanza {
   cd /work/stanza
+
+  if [[ -e $STANZA_CACHE && $(cat $STANZA_CACHE) = $(git rev-parse HEAD) ]]; then
+    echo "Skip building stanza - git revision has not changed"
+    return
+  fi
 
   echo
   echo "=================="
@@ -37,6 +52,8 @@ function build_stanza {
   fi
 
   cp -rv /tmp/stanza /var/www/
+
+  git rev-parse HEAD > $STANZA_CACHE
 }
 
 case $1 in
