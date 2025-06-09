@@ -73,6 +73,7 @@ services:
     image: ghcr.io/dbcls/sparqlist:snapshot-f444cf1
     environment:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:?}
+      SPARQLIST_TOGOVAR_URL: ${TOGOVAR_FRONTEND_API_URL:-https://stg-togovar.org}
       SPARQLIST_TOGOVAR_APP: http://nginx
       SPARQLIST_TOGOVAR_SPARQL: http://sparql-proxy:3000/proxy/sparql
       SPARQLIST_TOGOVAR_SPARQLIST: http://sparqlist:3000/sparqlist
