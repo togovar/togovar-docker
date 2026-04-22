@@ -28,7 +28,7 @@ services:
     logging: *default-logging
 
   frontend-build:
-    image: node:18
+    image: node:22
     environment:
       TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:?}
       TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.org}
