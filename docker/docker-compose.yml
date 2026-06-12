@@ -92,7 +92,7 @@ services:
     logging: *default-logging
 
   sparqlist:
-    image: ghcr.io/dbcls/sparqlist:snapshot-f444cf1
+    image: ghcr.io/dbcls/sparqlist:snapshot-ff515db
     restart: unless-stopped
     environment:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:?}
