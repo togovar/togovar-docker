@@ -201,6 +201,17 @@ services:
     depends_on: []
     ports: []
 
+  kibana:
+    image: kibana:9.3.3
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch01:9200
+      I18N_LOCALE: ja-JP
+      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: "$KIBANA_ENCRYPTED_SAVED_OBJECTS_KEY"
+    depends_on:
+      - elasticsearch01
+    ports:
+      - "${KIBANA_PORT:-5601}:5601"
+
 volumes:
   app_bundle:
   app_sockets:
