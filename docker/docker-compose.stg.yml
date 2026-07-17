@@ -109,8 +109,8 @@ services:
       VIRT_SPARQL_MaxQueryExecutionTime: 600
       VIRT_SPARQL_ResultSetMaxRows: 1000000
       VIRT_URIQA_DefaultHost: togovar.org
-      VIRT_Parameters_NumberOfBuffers: 1360000
-      VIRT_Parameters_MaxDirtyBuffers: 1000000
+      VIRT_Parameters_NumberOfBuffers: 2720000
+      VIRT_Parameters_MaxDirtyBuffers: 2000000
     volumes:
       - ${VIRTUOSO_DATA:?}:/database
     logging: *default-logging
