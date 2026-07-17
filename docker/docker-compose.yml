@@ -96,6 +96,7 @@ services:
     restart: unless-stopped
     environment:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:?}
+      SPARQLIST_TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:?}
       SPARQLIST_TOGOVAR_URL: ${TOGOVAR_FRONTEND_API_URL:-https://stg-togovar.org}
       SPARQLIST_TOGOVAR_APP: http://nginx
       SPARQLIST_TOGOVAR_SPARQL: http://sparql-proxy:3000/proxy/sparql
