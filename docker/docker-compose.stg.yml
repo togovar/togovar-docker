@@ -141,7 +141,6 @@ services:
       ES_JAVA_OPTS: ${ELASTICSEARCH_JAVA_OPTS:--Xms16g -Xmx16g}
       TAKE_FILE_OWNERSHIP: "true"
       node.name: node01
-      cluster.initial_master_nodes: node01,node02,node03,node04,node05
       discovery.seed_hosts: elasticsearch02,elasticsearch03,elasticsearch04,elasticsearch05
       bootstrap.memory_lock: "true"
       xpack.monitoring.collection.enabled: "true"
