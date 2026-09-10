@@ -82,6 +82,15 @@ services:
       - app_sockets:/app/tmp/sockets
     logging: *default-logging
 
+  hgvs2vcf:
+    build: docker/hgvs2vcf-cdot-lmdb
+    image: hgvs2vcf-cdot-lmdb:2026.1
+    profiles:
+      - GRCh38
+    user: "${UID:?}:${GID:?}"
+    volumes:
+      - ${HGVS2VCF_DATA:?}:/data
+
   jbrowse:
     build: docker/jbrowse
     image: togovar_jbrowse:2022.2
