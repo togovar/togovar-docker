@@ -10,3 +10,6 @@
 [submodule "stanza"]
 	path = stanza
 	url = https://github.com/togovar/stanza.git
+[submodule "docker/hgvs2vcf-cdot-lmdb"]
+	path = docker/hgvs2vcf-cdot-lmdb
+	url = https://github.com/ktym/hgvs2vcf-cdot-lmdb.git
