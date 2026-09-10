@@ -94,7 +94,7 @@ services:
 
   sparql-proxy:
     build: docker/proxy
-    image: togovar_proxy:2023.1
+    image: togovar_proxy:2026.1
     environment:
       SPARQL_BACKEND: http://virtuoso:8890/sparql
       ADMIN_USER: admin
