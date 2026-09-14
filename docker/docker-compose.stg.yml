@@ -68,7 +68,6 @@ services:
     image: hgvs2vcf-cdot-lmdb:2026.1
     profiles:
       - GRCh38
-    user: "${UID:?}:${GID:?}"
     volumes:
       - ${HGVS2VCF_DATA:?}:/data
 
