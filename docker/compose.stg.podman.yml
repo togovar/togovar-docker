@@ -1,0 +1,107 @@
+# Linux rootless Podman override; combine only with compose.stg.yml.
+# Run from the repository root with --env-file .env; see README.md.
+# Shared :z labels are required because repository paths and volumes overlap.
+# Each Elasticsearch container needs its own user namespace.
+x-podman:
+  in_pod: false
+
+x-podman-logging: &podman-logging
+  driver: k8s-file
+  options:
+    max-size: "1m"
+
+x-podman-elasticsearch: &podman-elasticsearch
+  # Map the invoking user to the image UID without recursively chowning data.
+  userns_mode: "keep-id:uid=1000,gid=0"
+  user: "1000:0"
+  environment:
+    TAKE_FILE_OWNERSHIP: "false"
+    bootstrap.memory_lock: "false"
+  ulimits:
+    # Override BOTH inherited unlimited limits without Compose-specific tags.
+    memlock:
+      soft: 0
+      hard: 0
+  logging: *podman-logging
+
+services:
+  nginx:
+    logging: *podman-logging
+    volumes:
+      - ./docker/nginx/cache.sh:/usr/local/bin/cache:ro,z
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro,z
+      - ./docker/nginx/staging.conf:/etc/nginx/conf.d/default.conf.template:ro,z
+      - ${PUBLIC_DIR:?}:/var/www/public:ro,z
+      - app_sockets:/tmp/sockets:ro,z
+      - nginx_www:/var/www:z
+
+  app:
+    logging: *podman-logging
+    volumes:
+      - ./docker/ruby/docker-entrypoint.sh:/docker-entrypoint.sh:ro,z
+      - ./backend:/app:z
+      - app_bundle:/usr/local/bundle:z
+      - app_sockets:/app/tmp/sockets:z
+
+  hgvs2vcf:
+    image: localhost/hgvs2vcf-cdot-lmdb:2026.1
+    logging: *podman-logging
+    volumes:
+      - ${HGVS2VCF_DATA:?}:/data:z
+
+  jbrowse:
+    image: localhost/togovar_jbrowse:2022.2
+    logging: *podman-logging
+    volumes:
+      - ./docker/jbrowse/template/jbrowse_conf.json:/var/www/jbrowse_conf.json:ro,z
+      - ${JBROWSE_DATA:?}:/var/www/data:z
+
+  sparqlist:
+    logging: *podman-logging
+    volumes:
+      - ./sparqlist:/app/repository:z
+
+  sparql-proxy:
+    image: localhost/togovar_proxy:2026.1
+    logging: *podman-logging
+
+  virtuoso:
+    logging: *podman-logging
+    volumes:
+      - ${VIRTUOSO_DATA:?}:/database:z
+
+  redis:
+    logging: *podman-logging
+
+  elasticsearch01:
+    <<: *podman-elasticsearch
+    volumes:
+      - ${ELASTICSEARCH_01_DATA:?}:/usr/share/elasticsearch/data:z
+      - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot:z
+
+  elasticsearch02:
+    <<: *podman-elasticsearch
+    volumes:
+      - ${ELASTICSEARCH_02_DATA:?}:/usr/share/elasticsearch/data:z
+      - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot:z
+
+  elasticsearch03:
+    <<: *podman-elasticsearch
+    volumes:
+      - ${ELASTICSEARCH_03_DATA:?}:/usr/share/elasticsearch/data:z
+      - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot:z
+
+  elasticsearch04:
+    <<: *podman-elasticsearch
+    volumes:
+      - ${ELASTICSEARCH_04_DATA:?}:/usr/share/elasticsearch/data:z
+      - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot:z
+
+  elasticsearch05:
+    <<: *podman-elasticsearch
+    volumes:
+      - ${ELASTICSEARCH_05_DATA:?}:/usr/share/elasticsearch/data:z
+      - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot:z
+
+  kibana:
+    logging: *podman-logging
