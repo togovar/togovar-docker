@@ -1,11 +1,8 @@
-version: '3.7'
-
 x-logging:
   &default-logging
   driver: json-file
   options:
-    max-size: 1m
-    max-file: "1"
+    max-size: "1m"
 
 services:
   nginx:
@@ -17,7 +14,7 @@ services:
       - sparqlist
       - sparql-proxy
     ports:
-      - ${NGINX_PORT:-80}:80
+      - "${NGINX_PORT:-80}:80"
     volumes:
       - ./docker/nginx/cache.sh:/usr/local/bin/cache:ro
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
@@ -45,6 +42,7 @@ services:
       - .:/work
       - ./docker/frontend-build/docker-entrypoint.sh:/docker-entrypoint.sh:ro
       - nginx_www:/var/www
+    logging: *default-logging
 
   app:
     image: ruby:3.2.4
@@ -86,10 +84,12 @@ services:
   hgvs2vcf:
     build: docker/hgvs2vcf-cdot-lmdb
     image: hgvs2vcf-cdot-lmdb:2026.1
+    restart: unless-stopped
     profiles:
       - GRCh38
     volumes:
       - ${HGVS2VCF_DATA:?}:/data
+    logging: *default-logging
 
   jbrowse:
     build: docker/jbrowse
@@ -106,7 +106,7 @@ services:
     environment:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:?}
       SPARQLIST_TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:?}
-      SPARQLIST_TOGOVAR_URL: ${TOGOVAR_FRONTEND_API_URL:-https://stg-togovar.org}
+      SPARQLIST_TOGOVAR_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.org}
       SPARQLIST_TOGOVAR_APP: http://nginx
       SPARQLIST_TOGOVAR_SPARQL: http://sparql-proxy:3000/proxy/sparql
       SPARQLIST_TOGOVAR_SPARQLIST: http://sparqlist:3000/sparqlist
@@ -157,9 +157,9 @@ services:
     image: elasticsearch:9.3.3
     restart: unless-stopped
     ulimits:
-      #memlock: # failed to set ulimits on rootless
-      #  soft: -1
-      #  hard: -1
+      memlock:
+        soft: -1
+        hard: -1
       nofile:
         soft: 65535
         hard: 65535
@@ -167,6 +167,8 @@ services:
       ES_JAVA_OPTS: ${ELASTICSEARCH_JAVA_OPTS:--Xms16g -Xmx16g}
       TAKE_FILE_OWNERSHIP: "true"
       node.name: node01
+      # Set only when bootstrapping a new cluster; leave empty for existing data.
+      cluster.initial_master_nodes: ${ELASTICSEARCH_INITIAL_MASTER_NODES:-}
       discovery.seed_hosts: elasticsearch02,elasticsearch03,elasticsearch04,elasticsearch05
       bootstrap.memory_lock: "true"
       xpack.monitoring.collection.enabled: "true"
@@ -187,7 +189,6 @@ services:
       <<: *es_env
       node.name: node02
       discovery.seed_hosts: elasticsearch01,elasticsearch03,elasticsearch04,elasticsearch05
-      cluster.initial_master_nodes: node01,node02,node03,node04,node05
     volumes:
       - ${ELASTICSEARCH_02_DATA:?}:/usr/share/elasticsearch/data
     depends_on: []
@@ -198,7 +199,6 @@ services:
       <<: *es_env
       node.name: node03
       discovery.seed_hosts: elasticsearch01,elasticsearch02,elasticsearch04,elasticsearch05
-      cluster.initial_master_nodes: node01,node02,node03,node04,node05
     volumes:
       - ${ELASTICSEARCH_03_DATA:?}:/usr/share/elasticsearch/data
     depends_on: []
@@ -209,7 +209,6 @@ services:
       <<: *es_env
       node.name: node04
       discovery.seed_hosts: elasticsearch01,elasticsearch02,elasticsearch03,elasticsearch05
-      cluster.initial_master_nodes: node01,node02,node03,node04,node05
     volumes:
       - ${ELASTICSEARCH_04_DATA:?}:/usr/share/elasticsearch/data
     depends_on: []
@@ -220,7 +219,6 @@ services:
       <<: *es_env
       node.name: node05
       discovery.seed_hosts: elasticsearch01,elasticsearch02,elasticsearch03,elasticsearch04
-      cluster.initial_master_nodes: node01,node02,node03,node04,node05
     volumes:
       - ${ELASTICSEARCH_05_DATA:?}:/usr/share/elasticsearch/data
     depends_on: []
