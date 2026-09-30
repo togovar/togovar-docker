@@ -12,7 +12,7 @@ x-podman-logging: &podman-logging
 
 x-podman-elasticsearch: &podman-elasticsearch
   # Map the invoking user to the image UID without recursively chowning data.
-  userns_mode: "keep-id:uid=1000,gid=0"
+  userns_mode: "keep-id:uid=1000"
   user: "1000:0"
   environment:
     TAKE_FILE_OWNERSHIP: "false"

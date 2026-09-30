@@ -141,8 +141,6 @@ services:
       ES_JAVA_OPTS: ${ELASTICSEARCH_JAVA_OPTS:--Xms16g -Xmx16g}
       TAKE_FILE_OWNERSHIP: "true"
       node.name: node01
-      # Set only when bootstrapping a new cluster; leave empty for existing data.
-      cluster.initial_master_nodes: ${ELASTICSEARCH_INITIAL_MASTER_NODES:-}
       discovery.seed_hosts: elasticsearch02,elasticsearch03,elasticsearch04,elasticsearch05
       bootstrap.memory_lock: "true"
       xpack.monitoring.collection.enabled: "true"
