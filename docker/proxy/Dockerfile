@@ -1,4 +1,4 @@
-FROM ghcr.io/dbcls/sparql-proxy:snapshot-c149a4a
+FROM ghcr.io/dbcls/sparql-proxy:snapshot-a0bf55c
 
 ENV ROOT_PATH /proxy/
 

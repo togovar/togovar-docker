@@ -40,6 +40,7 @@ services:
       TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:?}
       TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://stg-togovar.org}
       TOGOVAR_ENDPOINT_SPARQL: ${TOGOVAR_ENDPOINT_SPARQL:-https://stg-togovar.org/sparql}
+      TOGOVAR_HGVS2VCF_URL: http://hgvs2vcf:4567
       TOGOVAR_REDIS_HOST: redis
       TOGOVAR_REDIS_PORT: 6379
       TOGOVAR_REDIS_SESSION_EXPIRE: ${TOGOVAR_REDIS_SESSION_EXPIRE:-86400}
@@ -62,6 +63,14 @@ services:
       - app_sockets:/app/tmp/sockets
     logging: *default-logging
 
+  hgvs2vcf:
+    build: docker/hgvs2vcf-cdot-lmdb
+    image: hgvs2vcf-cdot-lmdb:2026.1
+    profiles:
+      - GRCh38
+    volumes:
+      - ${HGVS2VCF_DATA:?}:/data
+
   jbrowse:
     build: docker/jbrowse
     image: togovar_jbrowse:2022.2
@@ -71,9 +80,10 @@ services:
     logging: *default-logging
 
   sparqlist:
-    image: ghcr.io/dbcls/sparqlist:snapshot-f444cf1
+    image: ghcr.io/dbcls/sparqlist:snapshot-ff515db
     environment:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:?}
+      SPARQLIST_TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:?}
       SPARQLIST_TOGOVAR_URL: ${TOGOVAR_FRONTEND_API_URL:-https://stg-togovar.org}
       SPARQLIST_TOGOVAR_APP: http://nginx
       SPARQLIST_TOGOVAR_SPARQL: http://sparql-proxy:3000/proxy/sparql
@@ -84,7 +94,7 @@ services:
 
   sparql-proxy:
     build: docker/proxy
-    image: togovar_proxy:2023.1
+    image: togovar_proxy:2026.1
     environment:
       SPARQL_BACKEND: http://virtuoso:8890/sparql
       ADMIN_USER: admin
@@ -108,8 +118,8 @@ services:
       VIRT_SPARQL_MaxQueryExecutionTime: 600
       VIRT_SPARQL_ResultSetMaxRows: 1000000
       VIRT_URIQA_DefaultHost: togovar.org
-      VIRT_Parameters_NumberOfBuffers: 1360000
-      VIRT_Parameters_MaxDirtyBuffers: 1000000
+      VIRT_Parameters_NumberOfBuffers: 2720000
+      VIRT_Parameters_MaxDirtyBuffers: 2000000
     volumes:
       - ${VIRTUOSO_DATA:?}:/database
     logging: *default-logging
@@ -119,7 +129,7 @@ services:
     logging: *default-logging
 
   elasticsearch01: &es
-    image: elasticsearch:8.13.4
+    image: elasticsearch:9.3.3
     ulimits:
       #memlock: # failed to set ulimits on rootless
       #  soft: -1
@@ -131,7 +141,6 @@ services:
       ES_JAVA_OPTS: ${ELASTICSEARCH_JAVA_OPTS:--Xms16g -Xmx16g}
       TAKE_FILE_OWNERSHIP: "true"
       node.name: node01
-      cluster.initial_master_nodes: node01,node02,node03,node04,node05
       discovery.seed_hosts: elasticsearch02,elasticsearch03,elasticsearch04,elasticsearch05
       bootstrap.memory_lock: "true"
       xpack.monitoring.collection.enabled: "true"
@@ -200,6 +209,17 @@ services:
       - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot
     depends_on: []
     ports: []
+
+  kibana:
+    image: kibana:9.3.3
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch01:9200
+      I18N_LOCALE: ja-JP
+      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: "$KIBANA_ENCRYPTED_SAVED_OBJECTS_KEY"
+    depends_on:
+      - elasticsearch01
+    ports:
+      - "${KIBANA_PORT:-5601}:5601"
 
 volumes:
   app_bundle:
