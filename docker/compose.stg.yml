@@ -30,7 +30,8 @@ services:
     logging: *default-logging
 
   app:
-    image: ruby:3.2.4
+    build: docker/ruby
+    image: togovar_ruby:2026.2
     environment:
       RAILS_ENV: production
       WEB_CONCURRENCY: 10
@@ -51,7 +52,6 @@ services:
       TOGOVAR_KEYCLOAK_AUTHORIZE_SCOPE: ${TOGOVAR_KEYCLOAK_AUTHORIZE_SCOPE:-}
       TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_NAME: ${TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_NAME:-}
       TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_REGEX: ${TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_REGEX:-}
-    entrypoint: /docker-entrypoint.sh
     command:
       - start
     working_dir: /app
