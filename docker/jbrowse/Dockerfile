@@ -1,7 +1,12 @@
 FROM node:14-buster
 
-RUN apt --allow-releaseinfo-change update && \
-    apt install -y --no-install-recommends \
+RUN sed -i \
+      -e 's|http://deb.debian.org/debian-security|http://archive.debian.org/debian-security|g' \
+      -e 's|http://security.debian.org/debian-security|http://archive.debian.org/debian-security|g' \
+      -e 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' \
+      /etc/apt/sources.list && \
+    apt-get -o Acquire::Check-Valid-Until=false update && \
+    apt-get install -y --no-install-recommends \
       build-essential \
       libpng-dev \
       zlib1g-dev \

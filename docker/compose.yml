@@ -2,44 +2,63 @@ x-logging:
   &default-logging
   driver: json-file
   options:
-    max-size: 1m
-    max-file: "1"
+    max-size: "1m"
 
 services:
   nginx:
     image: nginx:1.25.2
-    environment:
-      TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:?}
-    command:
-      - /bin/sh
-      - -c
-      - "envsubst '$$TOGOVAR_REFERENCE' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+    restart: unless-stopped
     depends_on:
       - app
       - jbrowse
       - sparqlist
       - sparql-proxy
     ports:
-      - ${NGINX_PORT:-80}:80
+      - "${NGINX_PORT:-80}:80"
     volumes:
       - ./docker/nginx/cache.sh:/usr/local/bin/cache:ro
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./docker/nginx/staging.conf:/etc/nginx/conf.d/default.conf.template:ro
+      - ./docker/nginx/production.conf:/etc/nginx/conf.d/default.conf:ro
       - ${PUBLIC_DIR:?}:/var/www/public:ro
       - app_sockets:/tmp/sockets:ro
       - nginx_www:/var/www
     logging: *default-logging
 
+  frontend-build:
+    image: node:22
+    environment:
+      TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:?}
+      TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.org}
+      TOGOVAR_FRONTEND_STANZA_URL: ${TOGOVAR_FRONTEND_STANZA_URL:-https://togovar.org/stanza}
+      TOGOVAR_ENDPOINT_SPARQL: ${TOGOVAR_ENDPOINT_SPARQL:-https://togovar.org/sparql}
+      TOGOVAR_ENDPOINT_SEARCH: ${TOGOVAR_ENDPOINT_SEARCH:-https://togovar.org/search}
+      TOGOVAR_ENDPOINT_SPARQLIST: ${TOGOVAR_ENDPOINT_SPARQLIST:-https://togovar.org/sparqlist}
+      TOGOVAR_ENDPOINT_JBROWSE: ${TOGOVAR_ENDPOINT_JBROWSE:-https://togovar.org/jbrowse}
+    entrypoint: /docker-entrypoint.sh
+    command:
+      - build
+    working_dir: /work
+    volumes:
+      - .:/work
+      - ./docker/frontend-build/docker-entrypoint.sh:/docker-entrypoint.sh:ro
+      - nginx_www:/var/www
+    logging: *default-logging
+
   app:
-    image: ruby:3.2.4
+    build: docker/ruby
+    image: togovar_ruby:2026.2
+    restart: unless-stopped
+    depends_on:
+      frontend-build:
+        condition: service_completed_successfully
     environment:
       RAILS_ENV: production
       WEB_CONCURRENCY: 10
       SECRET_KEY_BASE: ${SECRET_KEY_BASE:?}
       TOGOVAR_ELASTICSEARCH_HOST: elasticsearch01:9200
       TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:?}
-      TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://stg-togovar.org}
-      TOGOVAR_ENDPOINT_SPARQL: ${TOGOVAR_ENDPOINT_SPARQL:-https://stg-togovar.org/sparql}
+      TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.org}
+      TOGOVAR_ENDPOINT_SPARQL: ${TOGOVAR_ENDPOINT_SPARQL:-https://togovar.org/sparql}
       TOGOVAR_HGVS2VCF_URL: http://hgvs2vcf:4567
       TOGOVAR_REDIS_HOST: redis
       TOGOVAR_REDIS_PORT: 6379
@@ -52,7 +71,6 @@ services:
       TOGOVAR_KEYCLOAK_AUTHORIZE_SCOPE: ${TOGOVAR_KEYCLOAK_AUTHORIZE_SCOPE:-}
       TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_NAME: ${TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_NAME:-}
       TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_REGEX: ${TOGOVAR_KEYCLOAK_AUTH_ATTRIBUTE_REGEX:-}
-    entrypoint: /docker-entrypoint.sh
     command:
       - start
     working_dir: /app
@@ -66,14 +84,17 @@ services:
   hgvs2vcf:
     build: docker/hgvs2vcf-cdot-lmdb
     image: hgvs2vcf-cdot-lmdb:2026.1
+    restart: unless-stopped
     profiles:
       - GRCh38
     volumes:
       - ${HGVS2VCF_DATA:?}:/data
+    logging: *default-logging
 
   jbrowse:
     build: docker/jbrowse
     image: togovar_jbrowse:2022.2
+    restart: unless-stopped
     volumes:
       - ./docker/jbrowse/template/jbrowse_conf.json:/var/www/jbrowse_conf.json:ro
       - ${JBROWSE_DATA:?}:/var/www/data
@@ -81,10 +102,11 @@ services:
 
   sparqlist:
     image: ghcr.io/dbcls/sparqlist:snapshot-ff515db
+    restart: unless-stopped
     environment:
       ADMIN_PASSWORD: ${SPARQLIST_ADMIN_PASSWORD:?}
       SPARQLIST_TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:?}
-      SPARQLIST_TOGOVAR_URL: ${TOGOVAR_FRONTEND_API_URL:-https://stg-togovar.org}
+      SPARQLIST_TOGOVAR_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.org}
       SPARQLIST_TOGOVAR_APP: http://nginx
       SPARQLIST_TOGOVAR_SPARQL: http://sparql-proxy:3000/proxy/sparql
       SPARQLIST_TOGOVAR_SPARQLIST: http://sparqlist:3000/sparqlist
@@ -95,6 +117,7 @@ services:
   sparql-proxy:
     build: docker/proxy
     image: togovar_proxy:2026.1
+    restart: unless-stopped
     environment:
       SPARQL_BACKEND: http://virtuoso:8890/sparql
       ADMIN_USER: admin
@@ -110,6 +133,7 @@ services:
 
   virtuoso:
     image: openlink/virtuoso-opensource-7:7.2.12
+    restart: unless-stopped
     environment:
       DBA_PASSWORD: dba
       SPARQL_UPDATE: "false"
@@ -126,14 +150,16 @@ services:
 
   redis:
     image: redis:7.2.1
+    restart: unless-stopped
     logging: *default-logging
 
   elasticsearch01: &es
     image: elasticsearch:9.3.3
+    restart: unless-stopped
     ulimits:
-      #memlock: # failed to set ulimits on rootless
-      #  soft: -1
-      #  hard: -1
+      memlock:
+        soft: -1
+        hard: -1
       nofile:
         soft: 65535
         hard: 65535
@@ -153,10 +179,7 @@ services:
       - elasticsearch05
     volumes:
       - ${ELASTICSEARCH_01_DATA:?}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot
     logging: *default-logging
-    ports:
-      - ${ELASTICSEARCH_PORT:-9200}:9200
 
   elasticsearch02:
     <<: *es
@@ -164,12 +187,9 @@ services:
       <<: *es_env
       node.name: node02
       discovery.seed_hosts: elasticsearch01,elasticsearch03,elasticsearch04,elasticsearch05
-      cluster.initial_master_nodes: node01,node02,node03,node04,node05
     volumes:
       - ${ELASTICSEARCH_02_DATA:?}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot
     depends_on: []
-    ports: []
 
   elasticsearch03:
     <<: *es
@@ -177,12 +197,9 @@ services:
       <<: *es_env
       node.name: node03
       discovery.seed_hosts: elasticsearch01,elasticsearch02,elasticsearch04,elasticsearch05
-      cluster.initial_master_nodes: node01,node02,node03,node04,node05
     volumes:
       - ${ELASTICSEARCH_03_DATA:?}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot
     depends_on: []
-    ports: []
 
   elasticsearch04:
     <<: *es
@@ -190,12 +207,9 @@ services:
       <<: *es_env
       node.name: node04
       discovery.seed_hosts: elasticsearch01,elasticsearch02,elasticsearch03,elasticsearch05
-      cluster.initial_master_nodes: node01,node02,node03,node04,node05
     volumes:
       - ${ELASTICSEARCH_04_DATA:?}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot
     depends_on: []
-    ports: []
 
   elasticsearch05:
     <<: *es
@@ -203,23 +217,9 @@ services:
       <<: *es_env
       node.name: node05
       discovery.seed_hosts: elasticsearch01,elasticsearch02,elasticsearch03,elasticsearch04
-      cluster.initial_master_nodes: node01,node02,node03,node04,node05
     volumes:
       - ${ELASTICSEARCH_05_DATA:?}:/usr/share/elasticsearch/data
-      - ${ELASTICSEARCH_SNAPSHOT:?}:/usr/share/elasticsearch/snapshot
     depends_on: []
-    ports: []
-
-  kibana:
-    image: kibana:9.3.3
-    environment:
-      ELASTICSEARCH_HOSTS: http://elasticsearch01:9200
-      I18N_LOCALE: ja-JP
-      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: "$KIBANA_ENCRYPTED_SAVED_OBJECTS_KEY"
-    depends_on:
-      - elasticsearch01
-    ports:
-      - "${KIBANA_PORT:-5601}:5601"
 
 volumes:
   app_bundle:
