@@ -25,7 +25,7 @@ services:
     logging: *default-logging
 
   frontend-build:
-    image: node:22
+    image: node:26
     environment:
       TOGOVAR_REFERENCE: ${TOGOVAR_REFERENCE:?}
       TOGOVAR_FRONTEND_API_URL: ${TOGOVAR_FRONTEND_API_URL:-https://togovar.org}
@@ -93,7 +93,7 @@ services:
 
   jbrowse:
     build: docker/jbrowse
-    image: togovar_jbrowse:2022.2
+    image: togovar_jbrowse:2026.1
     restart: unless-stopped
     volumes:
       - ./docker/jbrowse/template/jbrowse_conf.json:/var/www/jbrowse_conf.json:ro
