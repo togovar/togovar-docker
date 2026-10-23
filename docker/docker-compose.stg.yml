@@ -73,7 +73,7 @@ services:
 
   jbrowse:
     build: docker/jbrowse
-    image: togovar_jbrowse:2022.2
+    image: togovar_jbrowse:2026.1
     volumes:
       - ./docker/jbrowse/template/jbrowse_conf.json:/var/www/jbrowse_conf.json:ro
       - ${JBROWSE_DATA:?}:/var/www/data
