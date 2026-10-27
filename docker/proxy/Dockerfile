@@ -1,4 +1,4 @@
-FROM ghcr.io/dbcls/sparql-proxy:snapshot-a0bf55c
+FROM ghcr.io/dbcls/sparql-proxy:snapshot-4830388
 
 USER root
 
